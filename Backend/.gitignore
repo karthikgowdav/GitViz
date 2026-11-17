@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.*
+!**/.env.example
+
+# Logs / local database artifacts
+*.log
+pgdata/
+
+# Build / test output
+coverage/
+.nyc_output/
+
+# OS
+.DS_Store

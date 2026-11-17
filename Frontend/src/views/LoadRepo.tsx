@@ -63,7 +63,7 @@ export const LoadRepo: React.FC = () => {
     }
   };
 
-  const activeRepoId = repo?.repoId || 'sample-repo';
+  const activeRepoId = repo?.repoId || (USE_MOCK ? 'sample-repo' : '');
   const displayPath = activePath || repo?.path || '';
 
   return (

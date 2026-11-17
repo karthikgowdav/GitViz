@@ -58,7 +58,9 @@ export const Dashboard: React.FC = () => {
 
   const handleExport = (format: 'json' | 'csv') => {
     downloadExport({
-      repoId: churn?.repo.name || 'default',
+      // The DB is keyed by uuid. The name only works by convenience lookup,
+      // so prefer the active repo id whenever we have one.
+      repoId: activeRepoId || churn?.repo.name || 'default',
       format,
       churnData: churn,
       busFactorData: busFactor,

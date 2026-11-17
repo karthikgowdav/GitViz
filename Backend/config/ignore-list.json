@@ -1,0 +1,14 @@
+{
+  "patterns": [
+    "package-lock.json",
+    "yarn.lock",
+    "pnpm-lock.yaml",
+    "dist/",
+    "build/",
+    "node_modules/",
+    "*.min.*",
+    "go.sum",
+    "Cargo.lock"
+  ],
+  "merge_commits_counted": false
+}
