@@ -1,19 +1,30 @@
 {
-  "name": "backkend",
+  "name": "gitviz-backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "GitViz data layer: PostgreSQL schema, ingest, metrics engine and snapshot export",
+  "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "db:migrate": "node scripts/migrate.js",
+    "ingest": "node scripts/ingest.js",
+    "recompute": "node scripts/recompute.js",
+    "bench": "node scripts/benchmark.js",
+    "test": "node --test --test-concurrency=1 test/*.test.js"
   },
-  "keywords": [],
+  "keywords": [
+    "git",
+    "analytics",
+    "postgres"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
     "cors": "^2.8.6",
     "dotenv": "^18.0.10",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "pg": "^8.16.3"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
