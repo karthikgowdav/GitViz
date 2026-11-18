@@ -5,14 +5,14 @@
  *
  * P1 owns the real job runner (POST /repos -> background job + status polling).
  * This module exists so the data layer can be run end to end before P1 lands:
- * it validates the path, calls the dev git adapter, then hands parsed rows to
+ * it validates the path, calls the P1 Git reader, then hands parsed rows to
  * the P2 bulk-insert path. Job state is in-memory; the database's ingested_at
  * column is the durable "done" flag.
  */
 
 const { ingestParsedRepo } = require('../db/ingest');
 const { findRepoByPath, resolveRepo } = require('../db/queries/repos');
-const { validateRepoPath, parseGitRepository } = require('./git-log');
+const { validateRepoPath, parseGitRepository } = require('./git_reader');
 
 const jobs = new Map();
 
