@@ -101,6 +101,7 @@ export const TopChurnChart: React.FC<TopChurnChartProps> = ({
   return (
     <ChartCard
       title="Top-10 Code Churn"
+      icon={<Flame size={16} />}
       subtitle={`Highest modified files by ${metric === 'commits' ? 'commit frequency' : 'net lines altered'}. Click any row to inspect evolution.`}
       infoTooltip={`${mergeSentence} Churn correlates with bug density but does not predict bugs directly.`}
       actions={actions}

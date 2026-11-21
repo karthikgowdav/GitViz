@@ -5,6 +5,7 @@ import './ChartCard.css';
 
 interface ChartCardProps {
   title: string;
+  icon?: React.ReactNode;
   subtitle?: string;
   infoTooltip?: string;
   actions?: React.ReactNode;
@@ -15,6 +16,7 @@ interface ChartCardProps {
 
 export const ChartCard: React.FC<ChartCardProps> = ({
   title,
+  icon,
   subtitle,
   infoTooltip,
   actions,
@@ -27,6 +29,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({
       <div className="chart-card-header">
         <div className="chart-card-title-area">
           <div className="chart-card-heading-row">
+            {icon && <span className="chart-card-title-icon" aria-hidden="true">{icon}</span>}
             <h3 className="chart-card-title">{title}</h3>
             {infoTooltip && (
               <span className="chart-card-info-icon" title={infoTooltip} tabIndex={0} aria-label={infoTooltip}>

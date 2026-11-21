@@ -4,6 +4,7 @@ import './TableOfContents.css';
 export interface TocSection {
   id: string;
   label: string;
+  icon?: React.ReactNode;
 }
 
 interface TableOfContentsProps {
@@ -65,7 +66,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ sections }) =>
     <nav className="about-toc" aria-label="Table of contents">
       <span className="toc-title">On this page</span>
       <ul className="toc-list">
-        {sections.map(({ id, label }) => {
+        {sections.map(({ id, label, icon }) => {
           const isActive = activeId === id;
           return (
             <li key={id} className="toc-item">
@@ -75,7 +76,8 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ sections }) =>
                 onClick={(e) => handleScrollTo(id, e)}
                 aria-current={isActive ? 'location' : undefined}
               >
-                {label}
+                {icon && <span className="toc-link-icon" aria-hidden="true">{icon}</span>}
+                <span>{label}</span>
               </a>
             </li>
           );

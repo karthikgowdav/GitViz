@@ -1,4 +1,5 @@
 import React from 'react';
+import { Users } from 'lucide-react';
 import {
   ResponsiveContainer,
   BarChart,
@@ -42,6 +43,7 @@ export const AuthorsChart: React.FC<AuthorsChartProps> = ({ authors }) => {
   return (
     <ChartCard
       title="Commits per Author"
+      icon={<Users size={16} />}
       subtitle="Distribution of commits across identified contributors in repository history."
       ariaLabel="Bar chart of commits per contributor"
       className="authors-chart-card"

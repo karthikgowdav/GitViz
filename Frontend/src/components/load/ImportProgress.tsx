@@ -9,6 +9,7 @@ import {
   Activity,
   Circle,
   Loader2,
+  FolderGit2,
 } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
@@ -262,6 +263,7 @@ export const ImportProgress: React.FC<ImportProgressProps> = ({
               variant="ghost"
               size="md"
               onClick={() => onReset(false)}
+              leadingIcon={<FolderGit2 size={14} />}
             >
               Choose different path
             </Button>

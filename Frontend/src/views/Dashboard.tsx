@@ -9,6 +9,10 @@ import {
   GitCommit,
   ShieldAlert,
   Users,
+  Activity,
+  RotateCcw,
+  FolderGit2,
+  Database,
 } from 'lucide-react';
 import { useChurn, useBusFactor } from '../api/hooks';
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -90,9 +94,12 @@ export const Dashboard: React.FC = () => {
         <div className="dashboard-header">
           <div className="dashboard-title-area">
             <div className="dashboard-heading-row">
+              <div className="page-header-icon-tile" aria-hidden="true">
+                <Activity size={20} />
+              </div>
               <h1 className="dashboard-title">Health Dashboard</h1>
               {USE_MOCK && (
-                <Badge variant="info" className="sample-badge">
+                <Badge variant="info" icon={<Database size={12} />} className="sample-badge">
                   Sample data
                 </Badge>
               )}
@@ -107,6 +114,7 @@ export const Dashboard: React.FC = () => {
               <Button
                 variant="ghost"
                 size="md"
+                leadingIcon={<RotateCcw size={15} />}
                 onClick={() => {
                   clearRepo();
                   navigate('/load');
@@ -171,7 +179,7 @@ export const Dashboard: React.FC = () => {
             title="No repository loaded"
             description="Enter the path of a local Git repository to see its commit graph, file history and health metrics."
             action={
-              <Button to="/load" variant="primary" size="md">
+              <Button to="/load" variant="primary" size="md" leadingIcon={<FolderGit2 size={16} />}>
                 Load a repository
               </Button>
             }

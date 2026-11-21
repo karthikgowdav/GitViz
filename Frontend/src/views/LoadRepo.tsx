@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Database, AlertCircle, Info } from 'lucide-react';
+import { Database, AlertCircle, Info, FolderGit2 } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useCreateRepo } from '../api/hooks';
 import { USE_MOCK } from '../api/client';
@@ -124,6 +124,9 @@ export const LoadRepo: React.FC = () => {
         {/* Page Header */}
         <header className="load-repo-header">
           <div className="load-repo-title-row">
+            <div className="page-header-icon-tile" aria-hidden="true">
+              <FolderGit2 size={20} />
+            </div>
             <h1 className="load-repo-title">Load a Repository</h1>
             {USE_MOCK && (
               <Badge variant="info" icon={<Database size={12} />}>

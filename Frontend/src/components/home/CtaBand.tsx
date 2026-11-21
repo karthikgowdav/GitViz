@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowRight, BookOpen } from 'lucide-react';
+import { ArrowRight, BookOpen, FolderGit2 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import './CtaBand.css';
 
@@ -63,6 +63,7 @@ export const CtaBand: React.FC = () => {
                 size="lg"
                 to="/load"
                 className="cta-btn-primary"
+                leadingIcon={<FolderGit2 size={18} />}
                 trailingIcon={<ArrowRight size={18} />}
               >
                 Load Repository

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Database, FileSearch, Layers } from 'lucide-react';
+import { Database, FileSearch, Layers, FileClock, RotateCcw, FolderGit2 } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useFiles, useFileHistory } from '../api/hooks';
 import { useRepo } from '../context/RepoContext';
@@ -80,8 +80,14 @@ export const FileEvolution: React.FC = () => {
         {/* Header Heading */}
         <div className="file-evolution-header">
           <div className="file-evolution-title-area">
-            <span className="file-evolution-eyebrow">File Evolution</span>
+            <span className="file-evolution-eyebrow">
+              <FileClock size={13} aria-hidden="true" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />
+              <span>File Evolution</span>
+            </span>
             <div className="file-evolution-title-row">
+              <div className="page-header-icon-tile" aria-hidden="true">
+                <FileClock size={20} />
+              </div>
               <h1 className="file-evolution-title">Inspect how any file changed over time</h1>
               {USE_MOCK && (
                 <Badge variant="info" icon={<Database size={12} />}>
@@ -99,6 +105,7 @@ export const FileEvolution: React.FC = () => {
               <Button
                 variant="ghost"
                 size="md"
+                leadingIcon={<RotateCcw size={15} />}
                 onClick={() => {
                   clearRepo();
                   navigate('/load');
@@ -134,7 +141,7 @@ export const FileEvolution: React.FC = () => {
             title="No repository loaded"
             description="Enter the path of a local Git repository to see its commit graph, file history and health metrics."
             action={
-              <Button to="/load" variant="primary" size="md">
+              <Button to="/load" variant="primary" size="md" leadingIcon={<FolderGit2 size={16} />}>
                 Load a repository
               </Button>
             }
@@ -163,7 +170,7 @@ export const FileEvolution: React.FC = () => {
                   title="No files found"
                   description="This repository does not have any tracked files in history."
                   action={
-                    <Button to="/load" variant="primary" size="md">
+                    <Button to="/load" variant="primary" size="md" leadingIcon={<FolderGit2 size={16} />}>
                       Load a repository
                     </Button>
                   }

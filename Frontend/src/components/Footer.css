@@ -82,6 +82,38 @@
   margin: 0;
 }
 
+.footer-brand-github-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding: 6px 12px;
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  width: fit-content;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+}
+
+.footer-brand-github-btn:hover {
+  background-color: var(--color-surface-hover);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+.footer-brand-github-btn:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
 /* Column Headings */
 .footer-heading {
   font-family: var(--font-sans);
@@ -106,12 +138,18 @@
 .footer-link {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: var(--text-sm);
   color: var(--color-text-secondary);
   text-decoration: none;
   transition: color var(--transition-fast), transform var(--transition-fast);
   width: fit-content;
+}
+
+.footer-link-icon {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  transition: color var(--transition-fast);
 }
 
 .footer-link:hover {
@@ -120,8 +158,22 @@
   transform: translateX(2px);
 }
 
+.footer-link:hover .footer-link-icon {
+  color: var(--color-accent);
+}
+
 [data-theme="dark"] .footer-link:hover {
   color: var(--color-primary);
+}
+
+.footer-external-icon {
+  opacity: 0.6;
+  margin-left: 2px;
+  transition: opacity var(--transition-fast);
+}
+
+.footer-link:hover .footer-external-icon {
+  opacity: 1;
 }
 
 .footer-link:focus-visible {

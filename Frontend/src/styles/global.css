@@ -249,6 +249,27 @@ code, pre, kbd, samp {
   color: var(--color-text-primary);
 }
 
+/* Page Header Accent Icon Tile */
+.page-header-icon-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--gradient-subtle);
+  border: 1px solid var(--color-border);
+  color: var(--color-accent);
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .page-header-icon-tile {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-accent);
+}
+
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 8px;

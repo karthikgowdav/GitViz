@@ -1,7 +1,8 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Compass, GitGraph, Home } from 'lucide-react';
+import { Compass, GitGraph, Home, Github, ExternalLink } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { PROJECT_REPO_URL } from '../content/links';
 import { Button } from '../components/ui/Button';
 import './NotFound.css';
 
@@ -109,12 +110,24 @@ export const NotFound: React.FC = () => {
           </Button>
         </div>
 
-        {/* Ghost Link to Report Issue */}
+        {/* Ghost Link to Report Issue and GitHub */}
         <div className="not-found-footer-link">
           <Link to="/about#team" className="not-found-ghost-link">
-            <Compass size={13} aria-hidden="true" />
+            <Compass size={14} aria-hidden="true" />
             <span>Report a problem</span>
           </Link>
+          <span className="not-found-link-sep" aria-hidden="true">•</span>
+          <a
+            href={PROJECT_REPO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="not-found-ghost-link"
+            aria-label="GitHub repository (opens in a new tab)"
+          >
+            <Github size={14} aria-hidden="true" />
+            <span>GitHub repository</span>
+            <ExternalLink size={12} aria-hidden="true" />
+          </a>
         </div>
       </div>
       </div>

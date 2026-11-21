@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { Calendar } from 'lucide-react';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -75,6 +76,7 @@ export const ChurnTimeChart: React.FC<ChurnTimeChartProps> = ({
   return (
     <ChartCard
       title="Churn over Time"
+      icon={<Calendar size={16} />}
       subtitle={`Monthly aggregate ${metric === 'commits' ? 'commits' : 'lines modified'} across repository history.`}
       infoTooltip={`${mergeSentence} Reflects historical cadence and periods of intense refactoring.`}
       actions={actions}

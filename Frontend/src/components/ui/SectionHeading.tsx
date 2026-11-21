@@ -3,6 +3,7 @@ import './SectionHeading.css';
 
 export interface SectionHeadingProps {
   eyebrow?: string;
+  eyebrowIcon?: React.ReactNode;
   title: string;
   subtitle?: string;
   align?: 'center' | 'left';
@@ -13,6 +14,7 @@ export interface SectionHeadingProps {
 
 export const SectionHeading: React.FC<SectionHeadingProps> = ({
   eyebrow,
+  eyebrowIcon,
   title,
   subtitle,
   align = 'center',
@@ -24,7 +26,16 @@ export const SectionHeading: React.FC<SectionHeadingProps> = ({
 
   return (
     <div className={`section-heading section-heading-${align} ${className}`.trim()}>
-      {eyebrow && <span className="section-eyebrow">{eyebrow}</span>}
+      {eyebrow && (
+        <span className="section-eyebrow">
+          {eyebrowIcon && (
+            <span className="section-eyebrow-icon" aria-hidden="true">
+              {eyebrowIcon}
+            </span>
+          )}
+          <span>{eyebrow}</span>
+        </span>
+      )}
       <HeadingTag id={id} className="section-title">
         {title}
       </HeadingTag>

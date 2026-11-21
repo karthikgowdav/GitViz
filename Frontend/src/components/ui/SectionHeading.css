@@ -20,7 +20,9 @@
 }
 
 .section-eyebrow {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   font-family: var(--font-sans);
   font-size: var(--text-xs);
   font-weight: var(--font-bold);
@@ -28,6 +30,12 @@
   letter-spacing: 0.1em;
   color: var(--color-accent);
   margin-bottom: var(--space-2);
+}
+
+.section-eyebrow-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .section-title {

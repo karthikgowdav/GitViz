@@ -212,6 +212,7 @@ export const RepoPathForm: React.FC<RepoPathFormProps> = ({
             size="lg"
             onClick={handleClear}
             disabled={!path || isSubmitting}
+            leadingIcon={<X size={15} />}
           >
             Clear
           </Button>
@@ -232,7 +233,8 @@ export const RepoPathForm: React.FC<RepoPathFormProps> = ({
               className="recent-clear-btn"
               aria-label="Clear recent repositories list"
             >
-              Clear recent
+              <X size={12} aria-hidden="true" style={{ marginRight: '4px', display: 'inline-block', verticalAlign: 'middle' }} />
+              <span>Clear recent</span>
             </button>
           </div>
 

@@ -19,6 +19,7 @@ Every check in this section must pass in **both Light and Dark themes**, with ke
 | 5 | **Code Snippet Copy** | Navigate to the "How it works" section, click or trigger the "Copy" button on `~/projects/my-repo` | Button swaps to "Copied" with check icon for 2 seconds. Screen reader announces via `aria-live="polite"`. | [ ] |
 | 6 | **Feature Card Deep Links** | Tab through the 3 feature cards | Hover/focus raises card with cyan glow. Clicking card navigates to `/graph`, `/files`, and `/dashboard` respectively. | [ ] |
 | 7 | **Honesty Copy Verification** | Inspect trust cards and footer disclaimers | Text explicitly states: "Runs locally", "Read-only: GitViz never changes your repository", "Ignored by default: lockfiles and build folders". No buzzwords ("blazing", "revolutionary"). | [ ] |
+| 8 | **Footer Links & GitHub Action** | Inspect the footer brand column and link sections | All footer links display 16px icons. GitHub link points to team repo in new tab with accessible label and ExternalLink icon. Brand column has "Star / View on GitHub" action button. No theme toggle in footer. | [ ] |
 
 ---
 
@@ -78,6 +79,7 @@ Every check in this section must pass in **both Light and Dark themes**, with ke
 | 4 | **Interactive FAQ Accordion** | Click each FAQ question (e.g., *"Doesn't CodeScene already do this?"*, *"Can't AI just explain a codebase?"*) | Accordion opens smoothly, setting `aria-expanded="true"`. Answers strictly match the prepared answers from P4 PRD. | [ ] |
 | 5 | **Architecture & Privacy** | Verify the 3 privacy cards | Confirms local execution, read-only Git operations, and zero outbound network telemetry. | [ ] |
 | 6 | **Narrow Viewport (360px)** | Resize to 360px | Sticky TOC switches to top horizontal pill bar or hides cleanly; cards, badges, and FAQ items remain fully readable. | [ ] |
+| 7 | **Team Cards & GitHub Profiles** | Scroll to Team & Roles section | Shows 4 team cards with real names (Karthick T C, M Srikanth Subba Reddy, Karthik Gowda T V, Jaidatta S Hegde), roles, areas, descriptions, lane-colored initials avatars, GitHub profile links for known usernames, and "View project on GitHub" button linking to team repo. | [ ] |
 
 ---
 

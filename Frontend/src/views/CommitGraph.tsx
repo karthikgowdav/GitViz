@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Database, FilterX } from 'lucide-react';
+import { Database, FilterX, RotateCcw, FolderGit2, GitBranch } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useCommits } from '../api/hooks';
 import { USE_MOCK } from '../api/client';
@@ -152,6 +152,9 @@ export const CommitGraph: React.FC = () => {
         <div className="commit-graph-header">
           <div className="commit-graph-header-left">
             <div className="commit-graph-title-row">
+              <div className="page-header-icon-tile" aria-hidden="true">
+                <GitBranch size={20} />
+              </div>
               <h1 className="commit-graph-title">Commit Graph</h1>
               {USE_MOCK && (
                 <Badge variant="info" icon={<Database size={12} />}>
@@ -168,6 +171,7 @@ export const CommitGraph: React.FC = () => {
               <Button
                 variant="ghost"
                 size="md"
+                leadingIcon={<RotateCcw size={15} />}
                 onClick={() => {
                   clearRepo();
                   navigate('/load');
@@ -184,7 +188,7 @@ export const CommitGraph: React.FC = () => {
             title="No repository loaded"
             description="Enter the path of a local Git repository to see its commit graph, file history and health metrics."
             action={
-              <Button to="/load" variant="primary" size="md">
+              <Button to="/load" variant="primary" size="md" leadingIcon={<FolderGit2 size={16} />}>
                 Load a repository
               </Button>
             }
@@ -225,7 +229,7 @@ export const CommitGraph: React.FC = () => {
                 title="No commits to show"
                 description="Load a repository to see its history. An empty repository has no commits yet."
                 action={
-                  <Button to="/load" variant="primary" size="md">
+                  <Button to="/load" variant="primary" size="md" leadingIcon={<FolderGit2 size={16} />}>
                     Load a repository
                   </Button>
                 }
@@ -239,6 +243,7 @@ export const CommitGraph: React.FC = () => {
                   <Button
                     variant="secondary"
                     size="md"
+                    leadingIcon={<FilterX size={15} />}
                     onClick={handleResetFilters}
                   >
                     Reset filters

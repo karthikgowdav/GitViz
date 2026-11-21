@@ -107,6 +107,7 @@ export const Hero: React.FC = () => {
                   type="submit"
                   variant="primary"
                   size="lg"
+                  leadingIcon={<FolderGit2 size={16} />}
                   className="hero-quickstart-submit"
                 >
                   Load Repository
