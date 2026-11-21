@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   truncateMiddle,
+  shortenPathLeading,
   getTopHotspotPaths,
   classifyBusFactor,
   escapeCsvField,
@@ -28,6 +29,32 @@ describe('metricsUtils', () => {
     it('handles edge cases for empty string and short maxLength', () => {
       expect(truncateMiddle('', 20)).toBe('');
       expect(truncateMiddle('abcdefghij', 4)).toBe('abcd');
+    });
+  });
+
+  describe('shortenPathLeading', () => {
+    it('returns short paths unchanged', () => {
+      expect(shortenPathLeading('src/styles/tokens.css', 26)).toBe('src/styles/tokens.css');
+    });
+
+    it('preserves full file name and shortens only the folder with leading ellipsis', () => {
+      const path = 'src/components/graph/CommitList.tsx';
+      const shortened = shortenPathLeading(path, 26);
+      expect(shortened).toBe('.../graph/CommitList.tsx');
+      expect(shortened.endsWith('CommitList.tsx')).toBe(true);
+      expect(shortened.startsWith('.../')).toBe(true);
+    });
+
+    it('falls back to .../filename when parent folder would exceed maxLength', () => {
+      const path = 'src/components/dashboard/TopChurnChart.tsx';
+      const shortened = shortenPathLeading(path, 26);
+      expect(shortened).toBe('.../TopChurnChart.tsx');
+      expect(shortened.endsWith('TopChurnChart.tsx')).toBe(true);
+    });
+
+    it('handles root or single file names gracefully', () => {
+      expect(shortenPathLeading('package.json', 26)).toBe('package.json');
+      expect(shortenPathLeading('', 26)).toBe('');
     });
   });
 

@@ -4,7 +4,7 @@ This checklist guides the engineering team on the day the Node.js/Express backen
 
 ---
 
-## 1. Quick Switch Checklist
+## 1. Mock/Live Switch Checklist
 
 - [ ] **Step 1:** Create or update `.env` in the frontend root:
   ```env
@@ -66,3 +66,16 @@ The frontend calls **only** the following REST endpoints through [`src/api/clien
 5. **Backend Port**: Is Express running on port `3000`, or should `BACKEND_DEV_PROXY_TARGET` in `vite.config.ts` be set to a different port?
 6. **Field Naming Uniformity**: Do all snake_case field names match [`src/api/types.ts`](../src/api/types.ts) (`churn_commits`, `churn_lines`, `top_author_share`, `commit_count`)?
 7. **History Break Threshold**: What is the similarity cutoff percentage used in Git log rename detection (e.g., `-M50%` or `-M80%`)?
+
+---
+
+## 5. Session-Only Lifecycle & Reentry Behavior
+
+1. **No Stale Repository Persistence**: The loaded repository is in-memory only. On fresh browser load or refresh, no repository is loaded (`repo === null`). Prior `gitviz_current_repo` localStorage keys are removed on startup.
+2. **Data Page Gating**: `/graph`, `/files`, and `/dashboard` require a loaded repository in the active session (`status === 'done'`). If no repo is loaded, an `EmptyState` ("No repository loaded") is displayed with a primary button linking to `/load`.
+3. **Change / Replace Affordances**:
+   - Header status chip displays repo name and a "Change" pill linking to `/load`.
+   - Page headers on `/graph`, `/files`, and `/dashboard` display a ghost button ("Load a different repository") that clears the session and navigates to `/load`.
+   - Opening `/load` when a repository is loaded pre-fills the path and displays: *"Loading a new repository replaces the current one."*
+4. **Hero Quick-Start Integration**: The home hero includes an inline input and primary "Load Repository" button. Submitting navigates to `/load` with `{ state: { autoLoadPath: path } }` and initiates ingestion automatically.
+5. **Interrupted Ingestion Handling**: If the user reloads the browser mid-import, the Load view displays a notice: *"Import was interrupted by the page refresh. Please enter the path again."*

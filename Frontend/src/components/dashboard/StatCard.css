@@ -73,6 +73,15 @@
   white-space: nowrap;
 }
 
+/* Active period card: smaller font and wrap to avoid truncation */
+.stat-card-active-period .stat-card-value {
+  font-size: var(--text-lg);
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: var(--leading-snug);
+}
+
 .stat-card-footer {
   margin-top: auto;
 }

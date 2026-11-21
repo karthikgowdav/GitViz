@@ -6,7 +6,14 @@ import {
   History,
   LayoutDashboard,
   ShieldCheck,
-  UserCheck,
+  Info,
+  AlertTriangle,
+  HelpCircle,
+  Users,
+  Github,
+  ExternalLink,
+  GitBranch,
+  BarChart2,
 } from 'lucide-react';
 import {
   projectInfo,
@@ -16,6 +23,7 @@ import {
   teamRoles,
   lastReviewedDate,
 } from '../content/about';
+import { PROJECT_REPO_URL } from '../content/links';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { resolveHashToLimitationId } from '../components/about/aboutUtils';
 import { TableOfContents, TocSection } from '../components/about/TableOfContents';
@@ -27,11 +35,11 @@ import { Card } from '../components/ui/Card';
 import './About.css';
 
 const TOC_SECTIONS: TocSection[] = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'limitations', label: 'Known Limitations' },
-  { id: 'faq', label: 'FAQ' },
-  { id: 'privacy', label: 'Privacy & Security' },
-  { id: 'team', label: 'Team & Roles' },
+  { id: 'overview', label: 'Overview', icon: <Info size={14} /> },
+  { id: 'limitations', label: 'Known Limitations', icon: <AlertTriangle size={14} /> },
+  { id: 'faq', label: 'FAQ', icon: <HelpCircle size={14} /> },
+  { id: 'privacy', label: 'Privacy & Security', icon: <ShieldCheck size={14} /> },
+  { id: 'team', label: 'Team & Roles', icon: <Users size={14} /> },
 ];
 
 export const About: React.FC = () => {
@@ -108,7 +116,8 @@ export const About: React.FC = () => {
           <div className="about-heading-row">
             <h1 className="about-title">About &amp; Limitations</h1>
             <Badge variant="info" className="about-badge">
-              Honest by design
+              <ShieldCheck size={14} aria-hidden="true" />
+              <span>Honest by design</span>
             </Badge>
           </div>
           <p className="about-subtitle">
@@ -126,7 +135,8 @@ export const About: React.FC = () => {
             {/* 1. OVERVIEW */}
             <section id="overview" className="about-section" aria-labelledby="heading-overview">
               <h2 id="heading-overview" className="about-section-title">
-                Overview
+                <Info size={20} className="section-title-icon" aria-hidden="true" />
+                <span>Overview</span>
               </h2>
               <p className="about-text-lead">{projectInfo.description}</p>
 
@@ -192,7 +202,8 @@ export const About: React.FC = () => {
             {/* 2. KNOWN LIMITATIONS */}
             <section id="limitations" className="about-section" aria-labelledby="heading-limitations">
               <h2 id="heading-limitations" className="about-section-title">
-                Known Limitations
+                <AlertTriangle size={20} className="section-title-icon" aria-hidden="true" />
+                <span>Known Limitations</span>
               </h2>
               <p className="about-section-desc">
                 Honesty beats a fake-perfect history. Here are the boundaries where Git heuristics,
@@ -204,7 +215,8 @@ export const About: React.FC = () => {
             {/* 3. FAQ */}
             <section id="faq" className="about-section" aria-labelledby="heading-faq">
               <h2 id="heading-faq" className="about-section-title">
-                Frequently Asked Questions
+                <HelpCircle size={20} className="section-title-icon" aria-hidden="true" />
+                <span>Frequently Asked Questions</span>
               </h2>
               <p className="about-section-desc">
                 Straightforward, factual answers about GitViz and its place alongside other developer tools.
@@ -215,7 +227,8 @@ export const About: React.FC = () => {
             {/* 4. PRIVACY & SECURITY */}
             <section id="privacy" className="about-section" aria-labelledby="heading-privacy">
               <h2 id="heading-privacy" className="about-section-title">
-                Privacy &amp; Security
+                <ShieldCheck size={20} className="section-title-icon" aria-hidden="true" />
+                <span>Privacy &amp; Security</span>
               </h2>
               <Card className="privacy-card">
                 <div className="privacy-card-header">
@@ -235,23 +248,65 @@ export const About: React.FC = () => {
 
             {/* 5. TEAM & ROLES */}
             <section id="team" className="about-section" aria-labelledby="heading-team">
-              <h2 id="heading-team" className="about-section-title">
-                Team &amp; Roles
-              </h2>
-              <p className="about-section-desc">
-                Built as a collaborative multi-role engineering project with distinct domain boundaries.
-              </p>
+              <div className="team-section-header">
+                <div>
+                  <h2 id="heading-team" className="about-section-title">
+                    <Users size={20} className="section-title-icon" aria-hidden="true" />
+                    <span>Team &amp; Roles</span>
+                  </h2>
+                  <p className="about-section-desc">
+                    Built as a collaborative multi-role engineering project with distinct domain boundaries.
+                  </p>
+                </div>
+                <a
+                  href={PROJECT_REPO_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-secondary btn-md team-repo-btn"
+                  aria-label="View project on GitHub (opens in a new tab)"
+                >
+                  <Github size={16} aria-hidden="true" />
+                  <span>View project on GitHub</span>
+                  <ExternalLink size={14} aria-hidden="true" />
+                </a>
+              </div>
               <div className="team-grid">
                 {teamRoles.map((role) => (
-                  <Card key={role.role} className="team-role-card">
+                  <Card key={role.name} className="team-role-card">
                     <div className="team-role-header">
-                      <UserCheck size={16} className="team-role-icon" aria-hidden="true" />
-                      <div>
-                        <h3 className="team-role-title">{role.role}</h3>
+                      <div
+                        className="team-avatar"
+                        style={{ backgroundColor: role.laneColor }}
+                        aria-hidden="true"
+                      >
+                        {role.initials}
+                      </div>
+                      <div className="team-role-meta">
+                        <div className="team-member-name-row">
+                          <h3 className="team-member-name">{role.name}</h3>
+                          <Badge variant="neutral" className="team-role-badge">
+                            {role.role}
+                          </Badge>
+                        </div>
                         <span className="team-role-area">{role.area}</span>
                       </div>
                     </div>
                     <p className="team-role-desc">{role.description}</p>
+                    {role.github && (
+                      <div className="team-github-row">
+                        <a
+                          href={`https://github.com/${role.github}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="team-github-link"
+                          aria-label={`${role.name}'s GitHub profile (opens in a new tab)`}
+                        >
+                          <Github size={14} aria-hidden="true" />
+                          <span>@{role.github}</span>
+                          <ExternalLink size={12} aria-hidden="true" />
+                        </a>
+                      </div>
+                    )}
                   </Card>
                 ))}
               </div>
@@ -274,10 +329,12 @@ export const About: React.FC = () => {
               </div>
               <div className="about-cta-buttons">
                 <Button variant="primary" size="md" to="/graph">
-                  Open Commit Graph
+                  <GitBranch size={16} aria-hidden="true" />
+                  <span>Open Commit Graph</span>
                 </Button>
                 <Button variant="secondary" size="md" to="/dashboard">
-                  View Dashboard
+                  <BarChart2 size={16} aria-hidden="true" />
+                  <span>View Dashboard</span>
                 </Button>
               </div>
             </Card>

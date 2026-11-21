@@ -26,9 +26,13 @@ export interface PrivacyPoint {
 }
 
 export interface TeamRole {
+  name: string;
   role: string;
   area: string;
   description: string;
+  github?: string;
+  initials: string;
+  laneColor: string;
 }
 
 export interface ProjectInfo {
@@ -42,7 +46,7 @@ export const projectInfo: ProjectInfo = {
   name: 'GitViz',
   tagline: 'Local Git analytics and evolution visualizer',
   description:
-    'Turn repository history into a commit graph, a file life story, and a health dashboard in seconds — running entirely on your local machine, honest about every limitation.',
+    'Turn repository history into a commit graph, a file timeline, and a health dashboard, running entirely on your local machine.',
   stack: [
     'React 18',
     'TypeScript',
@@ -158,28 +162,42 @@ export const privacyPoints: PrivacyPoint[] = [
   },
 ];
 
-// TODO: Replace role placeholders with actual teammate names when finalized
 export const teamRoles: TeamRole[] = [
   {
-    role: 'Backend Engineer',
-    area: 'Git ingestion and REST API',
-    description: 'Single-pass Git log parser and Express REST service architecture.',
-  },
-  {
-    role: 'Data Engineer',
-    area: 'Schema, metrics and export',
-    description: 'PostgreSQL schema, metrics engine for churn and bus factor, and snapshot export.',
-  },
-  {
-    role: 'Frontend Engineer',
+    name: 'Karthick T C',
+    role: 'Frontend',
     area: 'React UI',
-    description: 'Virtualized commit DAG, file evolution timeline, and health dashboard.',
+    description: 'Virtualized commit DAG, file evolution timeline, health dashboard, and design system.',
+    github: 'karthickaradhya1-design',
+    initials: 'KT',
+    laneColor: 'var(--lane-1)',
   },
   {
-    role: 'Product & QA',
+    name: 'M Srikanth Subba Reddy',
+    role: 'Data',
+    area: 'Schema, metrics engine and export',
+    description: 'PostgreSQL schema, metrics engine for churn and bus factor, and snapshot export.',
+    github: 'sr1k7nth',
+    initials: 'MS',
+    laneColor: 'var(--lane-3)',
+  },
+  {
+    name: 'Karthik Gowda T V',
+    role: 'Backend',
+    area: 'Git ingestion and REST API',
+    description: 'Single-pass Git log parser, streaming ingestion, and Express REST service architecture.',
+    github: 'karthikgowdav',
+    initials: 'KG',
+    laneColor: 'var(--lane-4)',
+  },
+  {
+    name: 'Jaidatta S Hegde',
+    role: 'Product + QA',
     area: 'Testing, demo and documentation',
     description: 'Quality checklist, weird-repo validation pass, demo script, and claim-checking.',
+    initials: 'JH',
+    laneColor: 'var(--lane-2)',
   },
 ];
 
-export const lastReviewedDate = '2026-10-30';
+export const lastReviewedDate = '2026-11-21';

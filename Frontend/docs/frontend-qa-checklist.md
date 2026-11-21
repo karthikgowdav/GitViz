@@ -19,6 +19,7 @@ Every check in this section must pass in **both Light and Dark themes**, with ke
 | 5 | **Code Snippet Copy** | Navigate to the "How it works" section, click or trigger the "Copy" button on `~/projects/my-repo` | Button swaps to "Copied" with check icon for 2 seconds. Screen reader announces via `aria-live="polite"`. | [ ] |
 | 6 | **Feature Card Deep Links** | Tab through the 3 feature cards | Hover/focus raises card with cyan glow. Clicking card navigates to `/graph`, `/files`, and `/dashboard` respectively. | [ ] |
 | 7 | **Honesty Copy Verification** | Inspect trust cards and footer disclaimers | Text explicitly states: "Runs locally", "Read-only: GitViz never changes your repository", "Ignored by default: lockfiles and build folders". No buzzwords ("blazing", "revolutionary"). | [ ] |
+| 8 | **Footer Links & GitHub Action** | Inspect the footer brand column and link sections | All footer links display 16px icons. GitHub link points to team repo in new tab with accessible label and ExternalLink icon. Brand column has "Star / View on GitHub" action button. No theme toggle in footer. | [ ] |
 
 ---
 
@@ -78,6 +79,7 @@ Every check in this section must pass in **both Light and Dark themes**, with ke
 | 4 | **Interactive FAQ Accordion** | Click each FAQ question (e.g., *"Doesn't CodeScene already do this?"*, *"Can't AI just explain a codebase?"*) | Accordion opens smoothly, setting `aria-expanded="true"`. Answers strictly match the prepared answers from P4 PRD. | [ ] |
 | 5 | **Architecture & Privacy** | Verify the 3 privacy cards | Confirms local execution, read-only Git operations, and zero outbound network telemetry. | [ ] |
 | 6 | **Narrow Viewport (360px)** | Resize to 360px | Sticky TOC switches to top horizontal pill bar or hides cleanly; cards, badges, and FAQ items remain fully readable. | [ ] |
+| 7 | **Team Cards & GitHub Profiles** | Scroll to Team & Roles section | Shows 4 team cards with real names (Karthick T C, M Srikanth Subba Reddy, Karthik Gowda T V, Jaidatta S Hegde), roles, areas, descriptions, lane-colored initials avatars, GitHub profile links for known usernames, and "View project on GitHub" button linking to team repo. | [ ] |
 
 ---
 
@@ -145,7 +147,7 @@ In accordance with **P4 PRD Rule 7** (*"Honesty week: scan every claim — no 'f
 
 | File Path & Line | On-Screen Text / Claim | Why It's Honest & How QA Verifies |
 |---|---|---|
-| `src/content/about.ts:45` | *"Turn repository history into a commit graph, a file life story, and a health dashboard in seconds — running entirely on your local machine, honest about every limitation."* | Verified: Local execution only. No unmeasured 50k claims; references actual measured execution. |
+| `src/content/about.ts:45` | *"Turn repository history into a commit graph, a file timeline, and a health dashboard, running entirely on your local machine."* | Verified: Local execution only. No speed/time claims or unmeasured numbers. |
 | `src/content/about.ts:63` | *"Git detects renames by comparing file contents rather than storing explicit move events. If a file undergoes heavy structural refactoring in the same commit where it is moved, similarity drops below Git’s detection threshold and the link is lost. Rather than fabricating unverified lineage, GitViz displays a visible history break."* | Verified: Explains Git's default 50% similarity threshold honestly; shows visible break rather than fake links. |
 | `src/content/about.ts:70` | *"Linus Torvalds noted that git log --follow skips merge commits and can overcount historical edits across diverging branches. GitViz queries standard file history with rename detection, keeping merge commits and boundaries visible."* | Verified: Technical rationale for why GitViz avoids the `git log --follow` hack and provides a merge toggle. |
 | `src/content/about.ts:77` | *"Bus factor here measures the concentration of commits among authors, not true code comprehension. A high commit percentage indicates who made historical edits, not who understands the architectural context."* | Verified: Prevents the common misconception that bus factor represents human knowledge. |
@@ -188,3 +190,19 @@ In accordance with **P4 PRD Rule 7** (*"Honesty week: scan every claim — no 'f
 | `src/components/load/ImportProgress.tsx:180` | *"Your repository was not changed."* | Verified: Displayed on import failure to reassure user that repo integrity is intact. |
 | `src/components/load/loadUtils.ts:18` | `MAX_RECENT_REPOS = 5` | Verified: Bounds recent repository list to 5 items to avoid storage bloat. |
 | `src/components/load/loadUtils.ts:74` | Milestone steps: `0` (Queued), `> 0` (Reading history), `80` (Saving results), `100` (Done) | Verified: Strictly deterministic step mapping based on percentage ranges without timing claims. |
+
+---
+
+## 3. Session Reentry & Upload Entry Point Verification Suite
+
+| # | Test Scenario | Steps | Expected Result | Pass? |
+|---|---------------|-------|-----------------|-------|
+| 1 | **Session Isolation on Refresh** | Load repo `abc` on `/load`, navigate to `/graph`, refresh browser (`F5`) | Page reloads fresh with NO repository loaded. Gated EmptyState appears: *"No repository loaded"*, with description *"Enter the path of a local Git repository to see its commit graph, file history and health metrics."* and a primary *"Load a repository"* button. | [ ] |
+| 2 | **Data Pages Gating** | Navigate directly to `/graph`, `/files`, and `/dashboard` without loading a repo | Each page displays the standard EmptyState *"No repository loaded"* with a primary button to `/load`. No partial data or broken states render. | [ ] |
+| 3 | **Hero Quick-Start Validation** | On `/`, submit the hero quick-start input with an empty string | Inline error appears: *"Repository path is required."* Helper *"Read-only. Your repository is never changed."* is visible. | [ ] |
+| 4 | **Hero Quick-Start Flow** | On `/`, enter `~/projects/my-repo` and submit | Navigates to `/load` with path pre-filled via location state and automatically initiates ingestion without placing the path in the URL. | [ ] |
+| 5 | **Header Prominent Button** | View header on desktop (1280px) and mobile (360px) | On desktop, primary *"Load Repository"* button is visible before theme toggle. On mobile, inside the hamburger menu, full-width primary button is at the top. The 5 main nav links remain intact. | [ ] |
+| 6 | **Mock Mode Invalid Path** | On `/load`, enter `/does/not/exist` and submit | Friendly error alert appears: *"Path not found or not a Git repository"* with a *"Try again"* button. Repository is not loaded. | [ ] |
+| 7 | **Recent Chips Behavior** | On `/load`, click a chip from the "Recent repositories" list | Path input is populated with the selected path and focused. Ingestion does NOT start automatically; user must click *"Start import"*. | [ ] |
+| 8 | **Change Affordance on Loaded Repo** | After loading a repository, click the header status chip (showing `<name> Change`) | Opens `/load` displaying the form pre-filled with the current path and a note: *"Loading a new repository replaces the current one."* | [ ] |
+| 9 | **Load a Different Repository** | From `/graph`, `/files`, or `/dashboard`, click *"Load a different repository"* in the page header | Clears the active repository from context and navigates to `/load` with an empty path input and no replacement banner. | [ ] |

@@ -13,7 +13,7 @@ import {
 import { BarChart3, ExternalLink, Flame, Table as TableIcon } from 'lucide-react';
 import { TopFile } from '../../api/types';
 import {
-  truncateMiddle,
+  shortenPathLeading,
   getTopHotspotPaths,
   formatDate,
 } from './metricsUtils';
@@ -54,7 +54,7 @@ export const TopChurnChart: React.FC<TopChurnChartProps> = ({
 
     return sorted.map((file) => ({
       ...file,
-      truncatedPath: truncateMiddle(file.path, 22),
+      truncatedPath: shortenPathLeading(file.path, 26),
       val: metric === 'commits' ? file.churn_commits : file.churn_lines,
       isHotspot: top3Hotspots.has(file.path),
     }));
@@ -101,6 +101,7 @@ export const TopChurnChart: React.FC<TopChurnChartProps> = ({
   return (
     <ChartCard
       title="Top-10 Code Churn"
+      icon={<Flame size={16} />}
       subtitle={`Highest modified files by ${metric === 'commits' ? 'commit frequency' : 'net lines altered'}. Click any row to inspect evolution.`}
       infoTooltip={`${mergeSentence} Churn correlates with bug density but does not predict bugs directly.`}
       actions={actions}
@@ -109,7 +110,7 @@ export const TopChurnChart: React.FC<TopChurnChartProps> = ({
     >
       {viewMode === 'chart' ? (
         <div className="churn-chart-container" role="img" aria-label="Horizontal bar chart of top files by churn">
-          <ResponsiveContainer width="100%" height={340}>
+          <ResponsiveContainer width="100%" height="100%" minHeight={320}>
             <BarChart
               data={chartData}
               layout="vertical"
@@ -143,7 +144,7 @@ export const TopChurnChart: React.FC<TopChurnChartProps> = ({
                 dataKey="truncatedPath"
                 tick={{ fill: theme.textSecondary, fontSize: 11, fontFamily: 'var(--font-mono)' }}
                 stroke={theme.border}
-                width={130}
+                width={170}
               />
 
               <Tooltip

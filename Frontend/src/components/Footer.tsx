@@ -7,8 +7,15 @@ import {
   AlertTriangle,
   Cpu,
   ArrowUp,
+  Home,
+  FolderGit2,
+  FileClock,
+  Activity,
+  BookOpen,
+  Palette,
+  Github,
 } from 'lucide-react';
-import { ThemeToggle } from './ThemeToggle';
+import { PROJECT_REPO_URL } from '../content/links';
 import { USE_MOCK } from '../api/client';
 import './Footer.css';
 
@@ -43,6 +50,18 @@ export const Footer: React.FC = () => {
               A free, open-source Git analytics and evolution visualizer.
               Runs locally and reads your repository without changing it.
             </p>
+
+            <a
+              href={PROJECT_REPO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="footer-brand-github-btn"
+              aria-label="Star / View on GitHub (opens in a new tab)"
+            >
+              <Github size={15} aria-hidden="true" />
+              <span>Star / View on GitHub</span>
+              <ExternalLink size={12} aria-hidden="true" />
+            </a>
           </div>
 
           {/* Column 2: Explore Navigation */}
@@ -51,28 +70,33 @@ export const Footer: React.FC = () => {
             <nav aria-label="Explore navigation">
               <ul className="footer-nav-list">
                 <li>
-                  <Link to="/" className="footer-link">
-                    Home
+                  <Link to="/load" className="footer-link">
+                    <FolderGit2 size={16} className="footer-link-icon" aria-hidden="true" />
+                    <span>Load Repository</span>
                   </Link>
                 </li>
                 <li>
-                  <Link to="/load" className="footer-link">
-                    Load Repository
+                  <Link to="/" className="footer-link">
+                    <Home size={16} className="footer-link-icon" aria-hidden="true" />
+                    <span>Home</span>
                   </Link>
                 </li>
                 <li>
                   <Link to="/graph" className="footer-link">
-                    Commit Graph
+                    <GitBranch size={16} className="footer-link-icon" aria-hidden="true" />
+                    <span>Commit Graph</span>
                   </Link>
                 </li>
                 <li>
                   <Link to="/files" className="footer-link">
-                    File Evolution
+                    <FileClock size={16} className="footer-link-icon" aria-hidden="true" />
+                    <span>File Evolution</span>
                   </Link>
                 </li>
                 <li>
                   <Link to="/dashboard" className="footer-link">
-                    Dashboard
+                    <Activity size={16} className="footer-link-icon" aria-hidden="true" />
+                    <span>Dashboard</span>
                   </Link>
                 </li>
               </ul>
@@ -86,25 +110,27 @@ export const Footer: React.FC = () => {
               <ul className="footer-nav-list">
                 <li>
                   <Link to="/about" className="footer-link">
-                    About &amp; Limitations
+                    <BookOpen size={16} className="footer-link-icon" aria-hidden="true" />
+                    <span>About &amp; Limitations</span>
                   </Link>
                 </li>
                 <li>
                   <Link to="/design-system" className="footer-link">
-                    Design System
+                    <Palette size={16} className="footer-link-icon" aria-hidden="true" />
+                    <span>Design System</span>
                   </Link>
                 </li>
                 <li>
-                  {/* TODO: replace with official GitHub repository URL when published */}
                   <a
-                    href="#"
+                    href={PROJECT_REPO_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="footer-link"
-                    title="External link to GitHub repository"
+                    aria-label="GitHub repository (opens in a new tab)"
                   >
+                    <Github size={16} className="footer-link-icon" aria-hidden="true" />
                     <span>GitHub repository</span>
-                    <ExternalLink size={13} aria-hidden="true" />
+                    <ExternalLink size={13} aria-hidden="true" className="footer-external-icon" />
                   </a>
                 </li>
               </ul>
@@ -145,8 +171,6 @@ export const Footer: React.FC = () => {
           </div>
 
           <div className="footer-bottom-actions">
-            <ThemeToggle variant="icon" />
-
             <button
               type="button"
               onClick={scrollToTop}

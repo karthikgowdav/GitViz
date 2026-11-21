@@ -32,6 +32,26 @@ body {
   outline-offset: 2px;
 }
 
+/* Accessibility: Hide outline for programmatically focused non-interactive elements (tabIndex=-1) */
+[tabindex="-1"]:focus,
+[tabindex="-1"]:focus-visible {
+  outline: none !important;
+}
+
+/* Shared Page Container (matches Header container alignment) */
+.page-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+  width: 100%;
+}
+
+@media (max-width: 820px) {
+  .page-container {
+    padding: 0 var(--space-4);
+  }
+}
+
 /* Respect User Reduced Motion Preference */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -227,6 +247,27 @@ code, pre, kbd, samp {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   color: var(--color-text-primary);
+}
+
+/* Page Header Accent Icon Tile */
+.page-header-icon-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--gradient-subtle);
+  border: 1px solid var(--color-border);
+  color: var(--color-accent);
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .page-header-icon-tile {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-accent);
 }
 
 /* Custom Scrollbars */

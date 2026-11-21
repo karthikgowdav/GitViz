@@ -66,7 +66,7 @@ export const DesignSystemPreview: React.FC = () => {
   ];
 
   return (
-    <div style={{ maxWidth: '1180px', margin: '0 auto', padding: 'var(--space-8) var(--space-6)' }}>
+    <div className="page-container" style={{ paddingTop: 'var(--space-8)', paddingBottom: 'var(--space-12)' }}>
       {/* Top Header Bar */}
       <header
         style={{

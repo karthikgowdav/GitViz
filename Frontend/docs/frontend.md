@@ -126,14 +126,16 @@ In mock mode, append the `?state=` query parameter to test UI resilience:
 Repository state is centralized in [`src/context/RepoContext.tsx`](../src/context/RepoContext.tsx) via the `useRepo()` hook.
 
 - **Current Repository State**: Holds `{ repoId, name, path, status, commitCount }` or `null`.
-- **Mock Fallback**: `activeRepoId` automatically falls back to `'sample-repo'` **only** when `USE_MOCK` is true. When `USE_MOCK=false` and no repository has been imported, analytical pages (`/graph`, `/files`, `/dashboard`) display an `EmptyState` prompting the user to load a repository at `/load`.
-- **Status Resumption on Mount**: If a stored repository exists in `localStorage`, the context calls `getRepoStatus({ repoId })` once on mount to synchronize the latest ingestion status or commit totals.
+- **In-Memory Session Lifecycle**: The loaded repository is held strictly in browser memory. Every fresh page load, hard navigation, or browser refresh starts with NO repository loaded (`repo === null`). `RepoProvider` purges any legacy `gitviz_current_repo` key on startup to ensure prior sessions cannot leak in.
+- **Analytical Page Gating**: The analytical data pages (`/graph`, `/files`, and `/dashboard`) show data only when a repository has been loaded in the current session (`status === 'done'`). In both live and mock mode, when no repository is loaded, these pages display an `EmptyState` ("No repository loaded") prompting the user with a primary button to load a repository at `/load`. Testing switches (`?state=loading|empty|error`) remain supported for developer verification.
+- **Header Affordances & Switching**: When a repository is loaded, the desktop header status chip displays the repository name with a "Change" indicator linking to `/load`. The page header area of `/graph`, `/files`, and `/dashboard` displays a ghost button ("Load a different repository") that clears the active session and navigates to an empty `/load` form. Opening `/load` while a repository is already loaded displays the form pre-filled with the current path alongside an informational notice: *"Loading a new repository replaces the current one."*
+- **Refresh Interruption Protection**: If a page refresh interrupts an ongoing repository ingestion on `/load`, the user is greeted with a fresh load form and an explicit alert: *"Import was interrupted by the page refresh. Please enter the path again."*
+- **Hero Quick-Start Form**: The Home hero provides an inline path input and primary "Load Repository" button. Submitting passes the path via React Router location state (`state.autoLoadPath`) to `/load`, where ingestion commences automatically.
 
 ### LocalStorage Keys Used
 | Storage Key | Type / Contents | Purpose |
 |---|---|---|
-| `gitviz_current_repo` | JSON `{ repoId, name, path }` | Persists currently active repository across page refreshes. |
-| `gitviz_recent_repos` | Array of `{ path, name, lastLoadedAt }` | Stores up to 5 recently opened repositories for quick selection. |
+| `gitviz_recent_repos` | Array of `{ path, name, lastLoadedAt }` (max 5) | Stores up to 5 recently entered repository paths. Selecting a chip populates the input field without auto-loading. |
 | `gitviz_theme_preference` | `'light' \| 'dark'` | Persists user theme preference independently of OS default. |
 
 ---

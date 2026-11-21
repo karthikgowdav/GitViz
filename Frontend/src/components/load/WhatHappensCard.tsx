@@ -33,7 +33,7 @@ export const WhatHappensCard: React.FC = () => {
               <Database size={14} className="what-happens-step-icon" aria-hidden="true" />
               <strong>Local caching</strong>
             </div>
-            <p>The results are stored by the backend so pages can load quickly.</p>
+            <p>The results are stored by the backend so pages can load without re-parsing Git history.</p>
           </div>
         </li>
 

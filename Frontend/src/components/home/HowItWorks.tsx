@@ -6,6 +6,7 @@ import {
   ShieldCheck,
   Lock,
   SlidersHorizontal,
+  Compass,
 } from 'lucide-react';
 import { SectionHeading } from '../ui/SectionHeading';
 import { Card } from '../ui/Card';
@@ -99,6 +100,7 @@ export const HowItWorks: React.FC = () => {
         <SectionHeading
           id="how-it-works-heading"
           eyebrow="How it works"
+          eyebrowIcon={<Compass size={14} aria-hidden="true" />}
           title="From a local folder to answers in three steps"
           subtitle="GitViz reads your repository once and keeps everything on your machine."
           align="center"

@@ -32,6 +32,7 @@ export const RepoPathForm: React.FC<RepoPathFormProps> = ({
 
   useEffect(() => {
     setRecentRepos(loadRecentRepos());
+    inputRef.current?.focus();
   }, []);
 
   useEffect(() => {
@@ -139,7 +140,7 @@ export const RepoPathForm: React.FC<RepoPathFormProps> = ({
       <form onSubmit={handleSubmit} className="repo-path-form" noValidate>
         <div className="form-group">
           <label htmlFor="repo-path-input" className="repo-path-label">
-            Repository path
+            Step 1: Enter the repository path
           </label>
 
           <div className="repo-path-input-wrap">
@@ -211,6 +212,7 @@ export const RepoPathForm: React.FC<RepoPathFormProps> = ({
             size="lg"
             onClick={handleClear}
             disabled={!path || isSubmitting}
+            leadingIcon={<X size={15} />}
           >
             Clear
           </Button>
@@ -231,7 +233,8 @@ export const RepoPathForm: React.FC<RepoPathFormProps> = ({
               className="recent-clear-btn"
               aria-label="Clear recent repositories list"
             >
-              Clear recent
+              <X size={12} aria-hidden="true" style={{ marginRight: '4px', display: 'inline-block', verticalAlign: 'middle' }} />
+              <span>Clear recent</span>
             </button>
           </div>
 

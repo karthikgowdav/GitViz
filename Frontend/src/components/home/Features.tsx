@@ -6,6 +6,7 @@ import {
   Info,
   ArrowRight,
   Download,
+  Layers,
 } from 'lucide-react';
 import { SectionHeading } from '../ui/SectionHeading';
 import { Card } from '../ui/Card';
@@ -202,6 +203,7 @@ export const Features: React.FC = () => {
       <SectionHeading
         id="features-heading"
         eyebrow="What you get"
+        eyebrowIcon={<Layers size={14} aria-hidden="true" />}
         title="Three views of the same history"
         subtitle="Load a local repository once, then explore it as a graph, as a file timeline, and as a health dashboard."
         align="center"

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
-import { GitBranch, Menu, X } from 'lucide-react';
+import { GitBranch, Menu, X, FolderGit2 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
+import { Button } from './ui/Button';
 import { useRepo } from '../context/RepoContext';
 import { useRepoStatus } from '../api/hooks';
 import './Header.css';
@@ -120,8 +121,23 @@ export const Header: React.FC = () => {
             <div className="repo-status-chip" role="status" aria-live="polite">
               <span className={`repo-status-dot ${dotClass}`} aria-hidden="true" />
               <span>{chipText}</span>
+              {repo?.status === 'done' && (
+                <span className="repo-status-change" aria-hidden="true">
+                  Change
+                </span>
+              )}
             </div>
           </Link>
+
+          <Button
+            variant="primary"
+            size="md"
+            to="/load"
+            leadingIcon={<FolderGit2 size={15} />}
+            className="header-load-btn-desktop"
+          >
+            Load Repository
+          </Button>
 
           <ThemeToggle variant="icon" />
 
@@ -142,18 +158,20 @@ export const Header: React.FC = () => {
       {/* Mobile Slide-down Menu Panel */}
       {isMobileMenuOpen && (
         <div id="mobile-navigation" className="mobile-nav-panel" role="region" aria-label="Mobile Navigation">
+          <div className="mobile-nav-top-cta">
+            <Button
+              variant="primary"
+              size="md"
+              to="/load"
+              leadingIcon={<FolderGit2 size={16} />}
+              onClick={closeMobileMenu}
+              className="mobile-load-repo-btn"
+            >
+              Load Repository
+            </Button>
+          </div>
+
           <ul className="mobile-nav-links">
-            <li>
-              <NavLink
-                to="/load"
-                className={({ isActive }) =>
-                  `mobile-nav-link ${isActive ? 'active' : ''}`
-                }
-                onClick={closeMobileMenu}
-              >
-                <span>Load repository</span>
-              </NavLink>
-            </li>
             {NAV_ITEMS.map((item) => (
               <li key={item.path}>
                 <NavLink
@@ -180,6 +198,11 @@ export const Header: React.FC = () => {
               <div className="repo-status-chip" role="status" style={{ display: 'inline-flex' }}>
                 <span className={`repo-status-dot ${dotClass}`} aria-hidden="true" />
                 <span>{chipText}</span>
+                {repo?.status === 'done' && (
+                  <span className="repo-status-change" aria-hidden="true">
+                    Change
+                  </span>
+                )}
               </div>
             </Link>
             <ThemeToggle variant="button" />

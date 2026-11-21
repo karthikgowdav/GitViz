@@ -1,4 +1,5 @@
 .bus-factor-panel {
+  height: 100%;
   display: flex;
   flex-direction: column;
   padding: var(--space-4);

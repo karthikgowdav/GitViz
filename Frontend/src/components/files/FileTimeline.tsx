@@ -109,7 +109,7 @@ export const FileTimeline: React.FC<FileTimelineProps> = ({ history }) => {
           <div className="file-stat-item">
             <GitCommit size={15} className="file-stat-icon" aria-hidden="true" />
             <div className="file-stat-content">
-              <span className="file-stat-label">Commits</span>
+              <span className="file-stat-label">Commits in this history</span>
               <span className="file-stat-value">{summary.totalCommits}</span>
             </div>
           </div>

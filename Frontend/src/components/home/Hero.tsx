@@ -1,12 +1,28 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { GitBranch, ArrowRight, BarChart2, HardDrive, ShieldCheck, Cpu } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { GitBranch, ArrowRight, BarChart2, HardDrive, ShieldCheck, Cpu, FolderGit2, AlertCircle } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
+import { validateRepoPath } from '../load/loadUtils';
 import { HeroPreview } from './HeroPreview';
 import './Hero.css';
 
 export const Hero: React.FC = () => {
+  const navigate = useNavigate();
+  const [quickPath, setQuickPath] = useState('');
+  const [quickError, setQuickError] = useState<string | null>(null);
+
+  const handleQuickSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const validationError = validateRepoPath(quickPath);
+    if (validationError) {
+      setQuickError(validationError);
+      return;
+    }
+    setQuickError(null);
+    navigate('/load', { state: { autoLoadPath: quickPath.trim() } });
+  };
+
   return (
     <section className="hero-section" aria-labelledby="hero-heading">
       {/* Background Subtle Pattern & Blobs */}
@@ -38,10 +54,10 @@ export const Hero: React.FC = () => {
             dashboard with churn and bus-factor estimates.
           </p>
 
-          {/* 4. Action Buttons */}
+          {/* 4. Action Buttons (secondary & ghost) */}
           <div className="hero-actions hero-anim-4">
             <Button
-              variant="primary"
+              variant="secondary"
               size="lg"
               to="/graph"
               trailingIcon={<ArrowRight size={18} />}
@@ -49,7 +65,7 @@ export const Hero: React.FC = () => {
               Open Commit Graph
             </Button>
             <Button
-              variant="secondary"
+              variant="ghost"
               size="lg"
               to="/dashboard"
               leadingIcon={<BarChart2 size={18} />}
@@ -58,7 +74,60 @@ export const Hero: React.FC = () => {
             </Button>
           </div>
 
-          {/* 5. Trust Notes Row */}
+          {/* 5. Quick-Start Form Card (Visual Focus) */}
+          <div className="hero-quickstart-card hero-anim-4">
+            <form onSubmit={handleQuickSubmit} className="hero-quickstart-form" noValidate>
+              <label htmlFor="hero-path-input" className="hero-quickstart-label">
+                Repository path
+              </label>
+
+              <div className="hero-quickstart-input-row">
+                <div className="hero-quickstart-input-wrap">
+                  <FolderGit2 size={16} className="hero-quickstart-icon" aria-hidden="true" />
+                  <input
+                    id="hero-path-input"
+                    type="text"
+                    value={quickPath}
+                    onChange={(e) => {
+                      setQuickPath(e.target.value);
+                      if (quickError) setQuickError(null);
+                    }}
+                    placeholder="C:\Users\you\projects\my-repo or ~/projects/my-repo"
+                    autoComplete="off"
+                    spellCheck={false}
+                    className={`hero-quickstart-input ${quickError ? 'input-has-error' : ''}`}
+                    aria-invalid={Boolean(quickError)}
+                    aria-describedby={
+                      quickError ? 'hero-path-error hero-path-helper' : 'hero-path-helper'
+                    }
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="lg"
+                  leadingIcon={<FolderGit2 size={16} />}
+                  className="hero-quickstart-submit"
+                >
+                  Load Repository
+                </Button>
+              </div>
+
+              {quickError && (
+                <p id="hero-path-error" className="hero-quickstart-error" role="alert">
+                  <AlertCircle size={13} aria-hidden="true" />
+                  <span>{quickError}</span>
+                </p>
+              )}
+
+              <p id="hero-path-helper" className="hero-quickstart-helper">
+                Read-only. Your repository is never changed.
+              </p>
+            </form>
+          </div>
+
+          {/* 6. Trust Notes Row */}
           <div className="hero-trust-row hero-anim-5">
             <div className="hero-trust-item">
               <HardDrive size={15} className="hero-trust-icon" aria-hidden="true" />
@@ -73,14 +142,6 @@ export const Hero: React.FC = () => {
               <span>Numbers computed from Git, not guessed</span>
             </div>
           </div>
-
-          {/* Quick link to Load page */}
-          <p className="hero-load-prompt hero-anim-5">
-            Have a repository ready?{' '}
-            <Link to="/load" className="hero-load-link">
-              Load it
-            </Link>
-          </p>
         </div>
 
         {/* Right Column: Hero Visual Preview */}

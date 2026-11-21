@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Calendar,
   ChevronDown,
@@ -8,12 +9,16 @@ import {
   GitCommit,
   ShieldAlert,
   Users,
+  Activity,
+  RotateCcw,
+  FolderGit2,
+  Database,
 } from 'lucide-react';
 import { useChurn, useBusFactor } from '../api/hooks';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useRepo } from '../context/RepoContext';
 import { USE_MOCK, downloadExport } from '../api/client';
-import { formatActivePeriod } from '../components/dashboard/metricsUtils';
+import { formatActivePeriod, formatDate } from '../components/dashboard/metricsUtils';
 import { StatCard } from '../components/dashboard/StatCard';
 import { TopChurnChart } from '../components/dashboard/TopChurnChart';
 import { BusFactorPanel } from '../components/dashboard/BusFactorPanel';
@@ -27,20 +32,26 @@ import './Dashboard.css';
 
 export const Dashboard: React.FC = () => {
   usePageTitle('Health Dashboard');
-  const { activeRepoId } = useRepo();
+  const navigate = useNavigate();
+  const { repo, activeRepoId, clearRepo } = useRepo();
+
+  // Support ?state=loading|empty|error dev switches for testing
+  const isDevTesting = typeof window !== 'undefined' && Boolean(new URLSearchParams(window.location.search).get('state'));
+  const isLoaded = (repo?.status === 'done' && Boolean(activeRepoId)) || isDevTesting;
+
   const {
     data: churn,
     isLoading: isChurnLoading,
     error: churnError,
     refetch: refetchChurn,
-  } = useChurn(activeRepoId || undefined);
+  } = useChurn(isLoaded ? (activeRepoId || undefined) : undefined);
 
   const {
     data: busFactor,
     isLoading: isBusLoading,
     error: busError,
     refetch: refetchBus,
-  } = useBusFactor(activeRepoId || undefined);
+  } = useBusFactor(isLoaded ? (activeRepoId || undefined) : undefined);
 
   const [exportOpen, setExportOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -83,9 +94,12 @@ export const Dashboard: React.FC = () => {
         <div className="dashboard-header">
           <div className="dashboard-title-area">
             <div className="dashboard-heading-row">
+              <div className="page-header-icon-tile" aria-hidden="true">
+                <Activity size={20} />
+              </div>
               <h1 className="dashboard-title">Health Dashboard</h1>
               {USE_MOCK && (
-                <Badge variant="info" className="sample-badge">
+                <Badge variant="info" icon={<Database size={12} />} className="sample-badge">
                   Sample data
                 </Badge>
               )}
@@ -95,54 +109,82 @@ export const Dashboard: React.FC = () => {
             </p>
           </div>
 
-          {/* Export Dropdown */}
-          <div className="dashboard-export-wrapper" ref={dropdownRef}>
-            <Button
-              variant="secondary"
-              size="md"
-              leadingIcon={<Download size={15} />}
-              trailingIcon={<ChevronDown size={14} />}
-              onClick={() => setExportOpen(!exportOpen)}
-              aria-haspopup="true"
-              aria-expanded={exportOpen}
-            >
-              Export
-            </Button>
+          <div className="dashboard-header-actions">
+            {repo?.status === 'done' && (
+              <Button
+                variant="ghost"
+                size="md"
+                leadingIcon={<RotateCcw size={15} />}
+                onClick={() => {
+                  clearRepo();
+                  navigate('/load');
+                }}
+              >
+                Load a different repository
+              </Button>
+            )}
 
-            {exportOpen && (
-              <div className="export-dropdown-menu" role="menu" aria-label="Export options">
-                <button
-                  type="button"
-                  className="export-dropdown-item"
-                  role="menuitem"
-                  onClick={() => handleExport('json')}
+            {/* Export Dropdown */}
+            {isLoaded && (
+              <div className="dashboard-export-wrapper" ref={dropdownRef}>
+                <Button
+                  variant="secondary"
+                  size="md"
+                  leadingIcon={<Download size={15} />}
+                  trailingIcon={<ChevronDown size={14} />}
+                  onClick={() => setExportOpen(!exportOpen)}
+                  aria-haspopup="true"
+                  aria-expanded={exportOpen}
                 >
-                  <FileJson size={15} className="export-item-icon" />
-                  <div className="export-item-text">
-                    <span className="export-item-label">Export JSON</span>
-                    <span className="export-item-desc">Complete metrics payload</span>
-                  </div>
-                </button>
+                  Export
+                </Button>
 
-                <button
-                  type="button"
-                  className="export-dropdown-item"
-                  role="menuitem"
-                  onClick={() => handleExport('csv')}
-                >
-                  <FileSpreadsheet size={15} className="export-item-icon" />
-                  <div className="export-item-text">
-                    <span className="export-item-label">Export CSV</span>
-                    <span className="export-item-desc">Top churn files breakdown</span>
+                {exportOpen && (
+                  <div className="export-dropdown-menu" role="menu" aria-label="Export options">
+                    <button
+                      type="button"
+                      className="export-dropdown-item"
+                      role="menuitem"
+                      onClick={() => handleExport('json')}
+                    >
+                      <FileJson size={15} className="export-item-icon" />
+                      <div className="export-item-text">
+                        <span className="export-item-label">Export JSON</span>
+                        <span className="export-item-desc">Complete metrics payload</span>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      className="export-dropdown-item"
+                      role="menuitem"
+                      onClick={() => handleExport('csv')}
+                    >
+                      <FileSpreadsheet size={15} className="export-item-icon" />
+                      <div className="export-item-text">
+                        <span className="export-item-label">Export CSV</span>
+                        <span className="export-item-desc">Top churn files breakdown</span>
+                      </div>
+                    </button>
                   </div>
-                </button>
+                )}
               </div>
             )}
           </div>
         </div>
 
         {/* State Handlers: Loading, Error, Empty */}
-        {isLoading ? (
+        {!isLoaded ? (
+          <EmptyState
+            title="No repository loaded"
+            description="Enter the path of a local Git repository to see its commit graph, file history and health metrics."
+            action={
+              <Button to="/load" variant="primary" size="md" leadingIcon={<FolderGit2 size={16} />}>
+                Load a repository
+              </Button>
+            }
+          />
+        ) : isLoading ? (
           <div className="dashboard-loading-layout">
             <div className="dashboard-stats-grid">
               {Array.from({ length: 4 }).map((_, i) => (
@@ -166,7 +208,7 @@ export const Dashboard: React.FC = () => {
             description="The API did not respond. Check that the backend is running, or switch USE_MOCK on in src/api/client.ts."
             onRetry={handleRetryAll}
           />
-        ) : (!activeRepoId || !churn || churn.repo.commit_count === 0) ? (
+        ) : (!churn || churn.repo.commit_count === 0) ? (
           <EmptyState
             title="No metrics yet"
             description="Load a repository and let the import finish to see its health metrics."
@@ -197,6 +239,8 @@ export const Dashboard: React.FC = () => {
                 label="Active Period"
                 value={formatActivePeriod(churn.repo.first_commit_at, churn.repo.last_commit_at)}
                 caption="First to last commit"
+                className="stat-card-active-period"
+                valueTitle={`${formatDate(churn.repo.first_commit_at)} to ${formatDate(churn.repo.last_commit_at)}`}
               />
               <StatCard
                 icon={<ShieldAlert size={18} />}

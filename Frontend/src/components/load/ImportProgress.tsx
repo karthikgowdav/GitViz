@@ -9,6 +9,7 @@ import {
   Activity,
   Circle,
   Loader2,
+  FolderGit2,
 } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
@@ -78,8 +79,24 @@ export const ImportProgress: React.FC<ImportProgressProps> = ({
       const recents = loadRecentRepos();
       const updated = addRecentRepo(recents, { path: repoPath, name: repoName });
       saveRecentRepos(updated);
+
+      try {
+        sessionStorage.removeItem('gitviz_import_in_progress');
+      } catch {
+        // Ignore storage errors
+      }
     }
   }, [isDone, repoId, repoPath, commitCount, setRepo]);
+
+  useEffect(() => {
+    if (isError) {
+      try {
+        sessionStorage.removeItem('gitviz_import_in_progress');
+      } catch {
+        // Ignore storage errors
+      }
+    }
+  }, [isError]);
 
   const stepItems = getStepItems(pct);
   const repoName = getRepoNameFromPath(repoPath);
@@ -246,6 +263,7 @@ export const ImportProgress: React.FC<ImportProgressProps> = ({
               variant="ghost"
               size="md"
               onClick={() => onReset(false)}
+              leadingIcon={<FolderGit2 size={14} />}
             >
               Choose different path
             </Button>
