@@ -60,6 +60,13 @@
   color: var(--color-text-secondary);
 }
 
+.dashboard-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
 /* Export Dropdown */
 .dashboard-export-wrapper {
   position: relative;

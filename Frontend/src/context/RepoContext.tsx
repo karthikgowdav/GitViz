@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
-import { getRepoStatus, USE_MOCK } from '../api/client';
+import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import { USE_MOCK } from '../api/client';
 import { STORAGE_KEY_CURRENT_REPO } from '../components/load/loadUtils';
 
 export interface RepoInfo {
@@ -20,91 +20,35 @@ export interface RepoContextValue {
 
 const RepoContext = createContext<RepoContextValue | undefined>(undefined);
 
-function loadStoredRepo(): RepoInfo | null {
-  if (typeof window === 'undefined') return null;
+// Clean up any legacy or prior session persisted repo key on startup so sessions never leak
+if (typeof window !== 'undefined') {
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY_CURRENT_REPO);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (parsed && typeof parsed.repoId === 'string' && typeof parsed.name === 'string') {
-      return {
-        repoId: parsed.repoId,
-        name: parsed.name,
-        path: parsed.path || '',
-        status: 'ingesting',
-        commitCount: 0,
-      };
-    }
-  } catch {
-    // Ignore localStorage parse error
-  }
-  return null;
-}
-
-function persistStoredRepo(repo: RepoInfo | null): void {
-  if (typeof window === 'undefined') return;
-  try {
-    if (repo) {
-      window.localStorage.setItem(
-        STORAGE_KEY_CURRENT_REPO,
-        JSON.stringify({
-          repoId: repo.repoId,
-          name: repo.name,
-          path: repo.path,
-        })
-      );
-    } else {
-      window.localStorage.removeItem(STORAGE_KEY_CURRENT_REPO);
-    }
+    window.localStorage.removeItem(STORAGE_KEY_CURRENT_REPO);
   } catch {
     // Ignore storage errors
   }
 }
 
 export const RepoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [repo, setRepoState] = useState<RepoInfo | null>(() => loadStoredRepo());
-
-  // Re-check status on initial load once if stored repo exists
-  useEffect(() => {
-    if (!repo?.repoId) return;
-
-    let isMounted = true;
-    getRepoStatus({ repoId: repo.repoId })
-      .then((status) => {
-        if (!isMounted) return;
-        setRepoState((prev) => {
-          if (!prev || prev.repoId !== repo.repoId) return prev;
-          return {
-            ...prev,
-            status: status.status || (status.pct >= 100 ? 'done' : 'ingesting'),
-            commitCount: status.commit_count,
-          };
-        });
-      })
-      .catch(() => {
-        if (!isMounted) return;
-        setRepoState((prev) => {
-          if (!prev || prev.repoId !== repo.repoId) return prev;
-          return {
-            ...prev,
-            status: 'error',
-          };
-        });
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [repo?.repoId]);
+  // Current loaded repository lives strictly in memory for the active session.
+  // Clean up any legacy or prior session persisted repo key so sessions never restore across refreshes.
+  const [repo, setRepoState] = useState<RepoInfo | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.removeItem(STORAGE_KEY_CURRENT_REPO);
+      } catch {
+        // Ignore storage errors
+      }
+    }
+    return null;
+  });
 
   const setRepo = useCallback((newRepo: RepoInfo | null) => {
     setRepoState(newRepo);
-    persistStoredRepo(newRepo);
   }, []);
 
   const clearRepo = useCallback(() => {
     setRepoState(null);
-    persistStoredRepo(null);
   }, []);
 
   const updateRepoStatus = useCallback(
@@ -121,10 +65,13 @@ export const RepoProvider: React.FC<{ children: React.ReactNode }> = ({ children
     []
   );
 
-  // Fallback to 'sample-repo' ONLY when USE_MOCK is true
+  // When a repo is loaded, use its repoId.
+  // When no repo is loaded:
+  // - In mock mode, returns null (no silent fallback to 'sample-repo')
+  // - When USE_MOCK is false, returns '' (maintains teammate's contract)
   const activeRepoId = useMemo(() => {
     if (repo?.repoId) return repo.repoId;
-    return USE_MOCK ? 'sample-repo' : null;
+    return USE_MOCK ? null : '';
   }, [repo?.repoId]);
 
   const value = useMemo<RepoContextValue>(
@@ -148,3 +95,4 @@ export function useRepo(): RepoContextValue {
   }
   return context;
 }
+

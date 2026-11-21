@@ -61,11 +61,11 @@ export const CtaBand: React.FC = () => {
               <Button
                 variant="primary"
                 size="lg"
-                to="/graph"
+                to="/load"
                 className="cta-btn-primary"
                 trailingIcon={<ArrowRight size={18} />}
               >
-                Open Commit Graph
+                Load Repository
               </Button>
 
               <Button

@@ -51,13 +51,13 @@ export const Footer: React.FC = () => {
             <nav aria-label="Explore navigation">
               <ul className="footer-nav-list">
                 <li>
-                  <Link to="/" className="footer-link">
-                    Home
+                  <Link to="/load" className="footer-link">
+                    Load Repository
                   </Link>
                 </li>
                 <li>
-                  <Link to="/load" className="footer-link">
-                    Load Repository
+                  <Link to="/" className="footer-link">
+                    Home
                   </Link>
                 </li>
                 <li>

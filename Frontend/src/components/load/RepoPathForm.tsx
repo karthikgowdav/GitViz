@@ -32,6 +32,7 @@ export const RepoPathForm: React.FC<RepoPathFormProps> = ({
 
   useEffect(() => {
     setRecentRepos(loadRecentRepos());
+    inputRef.current?.focus();
   }, []);
 
   useEffect(() => {
@@ -139,7 +140,7 @@ export const RepoPathForm: React.FC<RepoPathFormProps> = ({
       <form onSubmit={handleSubmit} className="repo-path-form" noValidate>
         <div className="form-group">
           <label htmlFor="repo-path-input" className="repo-path-label">
-            Repository path
+            Step 1: Enter the repository path
           </label>
 
           <div className="repo-path-input-wrap">

@@ -78,8 +78,24 @@ export const ImportProgress: React.FC<ImportProgressProps> = ({
       const recents = loadRecentRepos();
       const updated = addRecentRepo(recents, { path: repoPath, name: repoName });
       saveRecentRepos(updated);
+
+      try {
+        sessionStorage.removeItem('gitviz_import_in_progress');
+      } catch {
+        // Ignore storage errors
+      }
     }
   }, [isDone, repoId, repoPath, commitCount, setRepo]);
+
+  useEffect(() => {
+    if (isError) {
+      try {
+        sessionStorage.removeItem('gitviz_import_in_progress');
+      } catch {
+        // Ignore storage errors
+      }
+    }
+  }, [isError]);
 
   const stepItems = getStepItems(pct);
   const repoName = getRepoNameFromPath(repoPath);

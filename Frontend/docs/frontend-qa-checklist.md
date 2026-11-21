@@ -188,3 +188,19 @@ In accordance with **P4 PRD Rule 7** (*"Honesty week: scan every claim — no 'f
 | `src/components/load/ImportProgress.tsx:180` | *"Your repository was not changed."* | Verified: Displayed on import failure to reassure user that repo integrity is intact. |
 | `src/components/load/loadUtils.ts:18` | `MAX_RECENT_REPOS = 5` | Verified: Bounds recent repository list to 5 items to avoid storage bloat. |
 | `src/components/load/loadUtils.ts:74` | Milestone steps: `0` (Queued), `> 0` (Reading history), `80` (Saving results), `100` (Done) | Verified: Strictly deterministic step mapping based on percentage ranges without timing claims. |
+
+---
+
+## 3. Session Reentry & Upload Entry Point Verification Suite
+
+| # | Test Scenario | Steps | Expected Result | Pass? |
+|---|---------------|-------|-----------------|-------|
+| 1 | **Session Isolation on Refresh** | Load repo `abc` on `/load`, navigate to `/graph`, refresh browser (`F5`) | Page reloads fresh with NO repository loaded. Gated EmptyState appears: *"No repository loaded"*, with description *"Enter the path of a local Git repository to see its commit graph, file history and health metrics."* and a primary *"Load a repository"* button. | [ ] |
+| 2 | **Data Pages Gating** | Navigate directly to `/graph`, `/files`, and `/dashboard` without loading a repo | Each page displays the standard EmptyState *"No repository loaded"* with a primary button to `/load`. No partial data or broken states render. | [ ] |
+| 3 | **Hero Quick-Start Validation** | On `/`, submit the hero quick-start input with an empty string | Inline error appears: *"Repository path is required."* Helper *"Read-only. Your repository is never changed."* is visible. | [ ] |
+| 4 | **Hero Quick-Start Flow** | On `/`, enter `~/projects/my-repo` and submit | Navigates to `/load` with path pre-filled via location state and automatically initiates ingestion without placing the path in the URL. | [ ] |
+| 5 | **Header Prominent Button** | View header on desktop (1280px) and mobile (360px) | On desktop, primary *"Load Repository"* button is visible before theme toggle. On mobile, inside the hamburger menu, full-width primary button is at the top. The 5 main nav links remain intact. | [ ] |
+| 6 | **Mock Mode Invalid Path** | On `/load`, enter `/does/not/exist` and submit | Friendly error alert appears: *"Path not found or not a Git repository"* with a *"Try again"* button. Repository is not loaded. | [ ] |
+| 7 | **Recent Chips Behavior** | On `/load`, click a chip from the "Recent repositories" list | Path input is populated with the selected path and focused. Ingestion does NOT start automatically; user must click *"Start import"*. | [ ] |
+| 8 | **Change Affordance on Loaded Repo** | After loading a repository, click the header status chip (showing `<name> Change`) | Opens `/load` displaying the form pre-filled with the current path and a note: *"Loading a new repository replaces the current one."* | [ ] |
+| 9 | **Load a Different Repository** | From `/graph`, `/files`, or `/dashboard`, click *"Load a different repository"* in the page header | Clears the active repository from context and navigates to `/load` with an empty path input and no replacement banner. | [ ] |

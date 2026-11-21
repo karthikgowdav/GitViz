@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Database, FilterX } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useCommits } from '../api/hooks';
@@ -24,8 +25,17 @@ const INITIAL_FILTERS: GraphFilterState = {
 
 export const CommitGraph: React.FC = () => {
   usePageTitle('Commit Graph');
-  const { activeRepoId } = useRepo();
-  const { data, isLoading, error, refetch } = useCommits(activeRepoId || undefined);
+  const navigate = useNavigate();
+  const { repo, activeRepoId, clearRepo } = useRepo();
+
+  // Support ?state=loading|empty|error dev switches for testing
+  const isDevTesting = typeof window !== 'undefined' && Boolean(new URLSearchParams(window.location.search).get('state'));
+  const isLoaded = (repo?.status === 'done' && Boolean(activeRepoId)) || isDevTesting;
+
+  const { data, isLoading, error, refetch } = useCommits(
+    isLoaded ? (activeRepoId || undefined) : undefined,
+    undefined
+  );
   const [filters, setFilters] = useState<GraphFilterState>(INITIAL_FILTERS);
   const [selectedCommit, setSelectedCommit] = useState<Commit | null>(null);
   const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false);
@@ -153,93 +163,117 @@ export const CommitGraph: React.FC = () => {
               Explore branches, merges and individual commits.
             </p>
           </div>
+          {repo?.status === 'done' && (
+            <div className="commit-graph-header-actions">
+              <Button
+                variant="ghost"
+                size="md"
+                onClick={() => {
+                  clearRepo();
+                  navigate('/load');
+                }}
+              >
+                Load a different repository
+              </Button>
+            </div>
+          )}
         </div>
 
-        {/* Toolbar */}
-        <GraphToolbar
-          filters={filters}
-          onFilterChange={setFilters}
-          onResetFilters={handleResetFilters}
-          authors={authors}
-          branches={branches}
-          totalCount={rawCommits.length}
-          filteredCount={filteredCommits.length}
-        />
-
-        {/* Legend and Filter Notice Banner */}
-        <GraphLegend
-          filtersActive={filtersActive}
-          onResetFilters={handleResetFilters}
-        />
-
-        {/* States & Main Content */}
-        {isLoading ? (
-          <LoadingSkeleton rows={8} />
-        ) : error ? (
-          <ErrorState
-            title="Could not load commits"
-            description={
-              error.message ||
-              'The API did not respond. Check that the backend is running, or switch USE_MOCK on in src/api/client.ts.'
-            }
-            onRetry={() => refetch()}
-          />
-        ) : (!activeRepoId || rawCommits.length === 0) ? (
+        {!isLoaded ? (
           <EmptyState
-            title={!activeRepoId ? "No repository loaded" : "No commits to show"}
-            description={
-              !activeRepoId
-                ? "Load a repository to explore its branches, merges and commits."
-                : "Load a repository to see its history. An empty repository has no commits yet."
-            }
+            title="No repository loaded"
+            description="Enter the path of a local Git repository to see its commit graph, file history and health metrics."
             action={
               <Button to="/load" variant="primary" size="md">
                 Load a repository
               </Button>
             }
           />
-        ) : filteredCommits.length === 0 ? (
-          <EmptyState
-            icon={<FilterX size={24} />}
-            title="No commits match your filters"
-            description="Try clearing your search query or adjusting the author and branch filters."
-            action={
-              <Button
-                variant="secondary"
-                size="md"
-                onClick={handleResetFilters}
-              >
-                Reset filters
-              </Button>
-            }
-          />
         ) : (
-          /* Split Layout: Virtualized List + Details Panel */
-          <div className="commit-graph-layout">
-            <div className="commit-graph-list-col">
-              <CommitList
-                commits={filteredCommits}
-                layouts={graphLayout.layouts}
-                selectedCommit={selectedCommit}
-                onSelectCommit={handleSelectCommit}
-                filtersActive={filtersActive}
-                gutterWidth={graphLayout.gutterWidth}
-                nextCursor={data?.next_cursor || null}
-              />
-            </div>
+          <>
+            {/* Toolbar */}
+            <GraphToolbar
+              filters={filters}
+              onFilterChange={setFilters}
+              onResetFilters={handleResetFilters}
+              authors={authors}
+              branches={branches}
+              totalCount={rawCommits.length}
+              filteredCount={filteredCommits.length}
+            />
 
-            <div
-              className={`commit-graph-details-col ${
-                mobileDetailsOpen ? 'mobile-open' : ''
-              }`}
-            >
-              <CommitDetails
-                commit={selectedCommit}
-                onClose={() => setMobileDetailsOpen(false)}
-                onSelectSha={handleSelectSha}
+            {/* Legend and Filter Notice Banner */}
+            <GraphLegend
+              filtersActive={filtersActive}
+              onResetFilters={handleResetFilters}
+            />
+
+            {/* States & Main Content */}
+            {isLoading ? (
+              <LoadingSkeleton rows={8} />
+            ) : error ? (
+              <ErrorState
+                title="Could not load commits"
+                description={
+                  error.message ||
+                  'The API did not respond. Check that the backend is running, or switch USE_MOCK on in src/api/client.ts.'
+                }
+                onRetry={() => refetch()}
               />
-            </div>
-          </div>
+            ) : rawCommits.length === 0 ? (
+              <EmptyState
+                title="No commits to show"
+                description="Load a repository to see its history. An empty repository has no commits yet."
+                action={
+                  <Button to="/load" variant="primary" size="md">
+                    Load a repository
+                  </Button>
+                }
+              />
+            ) : filteredCommits.length === 0 ? (
+              <EmptyState
+                icon={<FilterX size={24} />}
+                title="No commits match your filters"
+                description="Try clearing your search query or adjusting the author and branch filters."
+                action={
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    onClick={handleResetFilters}
+                  >
+                    Reset filters
+                  </Button>
+                }
+              />
+            ) : (
+              /* Split Layout: Virtualized List + Details Panel */
+              <div className="commit-graph-layout">
+                <div className="commit-graph-list-col">
+                  <CommitList
+                    commits={filteredCommits}
+                    layouts={graphLayout.layouts}
+                    selectedCommit={selectedCommit}
+                    onSelectCommit={handleSelectCommit}
+                    filtersActive={filtersActive}
+                    gutterWidth={graphLayout.gutterWidth}
+                    nextCursor={data?.next_cursor || null}
+                  />
+                </div>
+
+                <div
+                  className={`commit-graph-details-col ${
+                    mobileDetailsOpen ? 'mobile-open' : ''
+                  }`}
+                >
+                  <CommitDetails
+                    commit={selectedCommit}
+                    onClose={() => setMobileDetailsOpen(false)}
+                    onSelectSha={handleSelectSha}
+                  />
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Database, FileSearch, Layers } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useFiles, useFileHistory } from '../api/hooks';
@@ -14,10 +14,15 @@ import './FileEvolution.css';
 
 export const FileEvolution: React.FC = () => {
   usePageTitle('File Evolution');
-  const { activeRepoId } = useRepo();
+  const navigate = useNavigate();
+  const { repo, activeRepoId, clearRepo } = useRepo();
   const [searchParams, setSearchParams] = useSearchParams();
   const urlPath = searchParams.get('path');
   const [mobilePickerOpen, setMobilePickerOpen] = useState(false);
+
+  // Support ?state=loading|empty|error dev switches for testing
+  const isDevTesting = typeof window !== 'undefined' && Boolean(new URLSearchParams(window.location.search).get('state'));
+  const isLoaded = (repo?.status === 'done' && Boolean(activeRepoId)) || isDevTesting;
 
   // 1. Fetch file list
   const {
@@ -25,7 +30,7 @@ export const FileEvolution: React.FC = () => {
     isLoading: isFilesLoading,
     error: filesError,
     refetch: refetchFiles,
-  } = useFiles(activeRepoId || undefined);
+  } = useFiles(isLoaded ? (activeRepoId || undefined) : undefined);
 
   // Determine current active file path
   const currentPath = useMemo(() => {
@@ -58,7 +63,7 @@ export const FileEvolution: React.FC = () => {
     isLoading: isHistoryLoading,
     error: historyError,
     refetch: refetchHistory,
-  } = useFileHistory(activeRepoId || undefined, currentPath);
+  } = useFileHistory(isLoaded ? (activeRepoId || undefined) : undefined, currentPath);
 
   const handleSelectPath = (path: string) => {
     setSearchParams((prev) => {
@@ -89,30 +94,45 @@ export const FileEvolution: React.FC = () => {
             </p>
           </div>
 
-          {/* Mobile file picker drawer toggle button */}
-          <div className="mobile-picker-toggle-bar">
-            <button
-              type="button"
-              className="mobile-picker-toggle-btn"
-              onClick={() => setMobilePickerOpen(!mobilePickerOpen)}
-              aria-expanded={mobilePickerOpen}
-            >
-              <FileSearch size={15} />
-              <span>
-                {currentPath ? `File: ${currentPath.split('/').pop()}` : 'Select file'}
-              </span>
-              <span className="mobile-picker-toggle-badge">
-                {files ? `${files.length} files` : 'Files'}
-              </span>
-            </button>
+          <div className="file-evolution-header-actions">
+            {repo?.status === 'done' && (
+              <Button
+                variant="ghost"
+                size="md"
+                onClick={() => {
+                  clearRepo();
+                  navigate('/load');
+                }}
+              >
+                Load a different repository
+              </Button>
+            )}
+
+            {/* Mobile file picker drawer toggle button */}
+            <div className="mobile-picker-toggle-bar">
+              <button
+                type="button"
+                className="mobile-picker-toggle-btn"
+                onClick={() => setMobilePickerOpen(!mobilePickerOpen)}
+                aria-expanded={mobilePickerOpen}
+              >
+                <FileSearch size={15} />
+                <span>
+                  {currentPath ? `File: ${currentPath.split('/').pop()}` : 'Select file'}
+                </span>
+                <span className="mobile-picker-toggle-badge">
+                  {files ? `${files.length} files` : 'Files'}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Main Content: Empty State when no repo loaded, or two-column layout */}
-        {!activeRepoId ? (
+        {!isLoaded ? (
           <EmptyState
             title="No repository loaded"
-            description="Load a repository to inspect its file evolution and diffs."
+            description="Enter the path of a local Git repository to see its commit graph, file history and health metrics."
             action={
               <Button to="/load" variant="primary" size="md">
                 Load a repository
