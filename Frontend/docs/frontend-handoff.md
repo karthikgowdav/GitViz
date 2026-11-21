@@ -4,7 +4,7 @@ This checklist guides the engineering team on the day the Node.js/Express backen
 
 ---
 
-## 1. Quick Switch Checklist
+## 1. Mock/Live Switch Checklist
 
 - [ ] **Step 1:** Create or update `.env` in the frontend root:
   ```env

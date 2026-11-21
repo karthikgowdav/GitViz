@@ -9,13 +9,13 @@ interface CommitItem {
 }
 
 const SAMPLE_COMMITS: CommitItem[] = [
-  { sha: 'a9f7e21', message: "Merge branch 'feature/graph-dag'", time: '2h ago' },
-  { sha: '7c32e01', message: 'Optimize virtualized DAG rendering', time: '5h ago' },
-  { sha: 'b14d89a', message: 'Add bus-factor concentration logic', time: '1d ago' },
-  { sha: '4e91ac2', message: 'Freeze REST API shape with P1/P2', time: '2d ago' },
-  { sha: 'd38f2b7', message: 'Add rename break detector for file history', time: '3d ago' },
-  { sha: '180e45c', message: 'Curate default lockfile ignore list', time: '4d ago' },
-  { sha: '5a29f34', message: 'Initial commit: client choke point', time: '5d ago' },
+  { sha: 'a9f7e21', message: 'Merge branch', time: '2h ago' },
+  { sha: '7c32e01', message: 'Optimize list', time: '5h ago' },
+  { sha: 'b14d89a', message: 'Add bus factor', time: '1d ago' },
+  { sha: '4e91ac2', message: 'Freeze REST API', time: '2d ago' },
+  { sha: 'd38f2b7', message: 'Add renames', time: '3d ago' },
+  { sha: '180e45c', message: 'Curate ignore list', time: '4d ago' },
+  { sha: '5a29f34', message: 'Initial commit', time: '5d ago' },
 ];
 
 export const HeroPreview: React.FC = () => {

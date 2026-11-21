@@ -1,11 +1,15 @@
 .not-found-view {
   width: 100%;
   min-height: calc(100vh - 64px - 100px);
+  padding: var(--space-8) 0 var(--space-16);
+  background-color: var(--color-bg);
+}
+
+.not-found-page-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-8) var(--space-4) var(--space-16);
-  background-color: var(--color-bg);
+  min-height: calc(100vh - 64px - 100px - var(--space-8) - var(--space-16));
 }
 
 .not-found-container {

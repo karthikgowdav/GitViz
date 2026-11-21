@@ -74,7 +74,7 @@ export const Hero: React.FC = () => {
             </div>
           </div>
 
-          {/* Quick link to Load page */}
+          {/* Link to Load page */}
           <p className="hero-load-prompt hero-anim-5">
             Have a repository ready?{' '}
             <Link to="/load" className="hero-load-link">

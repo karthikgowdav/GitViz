@@ -13,7 +13,7 @@ import { useChurn, useBusFactor } from '../api/hooks';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useRepo } from '../context/RepoContext';
 import { USE_MOCK, downloadExport } from '../api/client';
-import { formatActivePeriod } from '../components/dashboard/metricsUtils';
+import { formatActivePeriod, formatDate } from '../components/dashboard/metricsUtils';
 import { StatCard } from '../components/dashboard/StatCard';
 import { TopChurnChart } from '../components/dashboard/TopChurnChart';
 import { BusFactorPanel } from '../components/dashboard/BusFactorPanel';
@@ -197,6 +197,8 @@ export const Dashboard: React.FC = () => {
                 label="Active Period"
                 value={formatActivePeriod(churn.repo.first_commit_at, churn.repo.last_commit_at)}
                 caption="First to last commit"
+                className="stat-card-active-period"
+                valueTitle={`${formatDate(churn.repo.first_commit_at)} to ${formatDate(churn.repo.last_commit_at)}`}
               />
               <StatCard
                 icon={<ShieldAlert size={18} />}

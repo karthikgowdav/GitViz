@@ -42,7 +42,7 @@ export const projectInfo: ProjectInfo = {
   name: 'GitViz',
   tagline: 'Local Git analytics and evolution visualizer',
   description:
-    'Turn repository history into a commit graph, a file life story, and a health dashboard in seconds — running entirely on your local machine, honest about every limitation.',
+    'Turn repository history into a commit graph, a file timeline, and a health dashboard, running entirely on your local machine.',
   stack: [
     'React 18',
     'TypeScript',

@@ -82,7 +82,7 @@ export const ChurnTimeChart: React.FC<ChurnTimeChartProps> = ({
       className="churn-time-card"
     >
       <div className="churn-time-chart-area" role="img" aria-label="Area chart of repository activity over time">
-        <ResponsiveContainer width="100%" height={260}>
+        <ResponsiveContainer width="100%" height="100%" minHeight={260}>
           <AreaChart
             data={chartData}
             margin={{ top: 10, right: 15, left: -10, bottom: 5 }}

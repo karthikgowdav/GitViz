@@ -10,6 +10,7 @@ interface StatCardProps {
   caption: string;
   badge?: string;
   className?: string;
+  valueTitle?: string;
 }
 
 export const StatCard: React.FC<StatCardProps> = ({
@@ -19,6 +20,7 @@ export const StatCard: React.FC<StatCardProps> = ({
   caption,
   badge,
   className = '',
+  valueTitle,
 }) => {
   return (
     <Card className={`stat-card ${className}`.trim()}>
@@ -37,7 +39,7 @@ export const StatCard: React.FC<StatCardProps> = ({
       </div>
 
       <div className="stat-card-body">
-        <span className="stat-card-value">{value}</span>
+        <span className="stat-card-value" title={valueTitle}>{value}</span>
       </div>
 
       <div className="stat-card-footer">

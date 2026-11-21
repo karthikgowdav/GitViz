@@ -133,7 +133,7 @@ Repository state is centralized in [`src/context/RepoContext.tsx`](../src/contex
 | Storage Key | Type / Contents | Purpose |
 |---|---|---|
 | `gitviz_current_repo` | JSON `{ repoId, name, path }` | Persists currently active repository across page refreshes. |
-| `gitviz_recent_repos` | Array of `{ path, name, lastLoadedAt }` | Stores up to 5 recently opened repositories for quick selection. |
+| `gitviz_recent_repos` | Array of `{ path, name, lastLoadedAt }` | Stores up to 5 recently opened repositories for direct selection. |
 | `gitviz_theme_preference` | `'light' \| 'dark'` | Persists user theme preference independently of OS default. |
 
 ---

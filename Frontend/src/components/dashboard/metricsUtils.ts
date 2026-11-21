@@ -22,6 +22,32 @@ export function truncateMiddle(path: string, maxLength: number = 32): string {
 }
 
 /**
+ * Shorten path by preserving the full file name and shortening only the folder part
+ * with a leading ellipsis (e.g. ".../graph/CommitList.tsx").
+ */
+export function shortenPathLeading(path: string, maxLength: number = 26): string {
+  if (!path) return '';
+  if (path.length <= maxLength) return path;
+
+  const lastSlash = path.lastIndexOf('/');
+  if (lastSlash === -1) {
+    return path;
+  }
+
+  const fileName = path.slice(lastSlash + 1);
+  const dir = path.slice(0, lastSlash);
+  const dirParts = dir.split('/');
+  const parentFolder = dirParts[dirParts.length - 1];
+
+  const candidate = `.../${parentFolder}/${fileName}`;
+  if (candidate.length <= maxLength) {
+    return candidate;
+  }
+
+  return `.../${fileName}`;
+}
+
+/**
  * Identify top hotspot files by commit churn count (default top 3).
  */
 export function getTopHotspotPaths(files: TopFile[], count: number = 3): Set<string> {

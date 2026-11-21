@@ -11,7 +11,8 @@ export const NotFound: React.FC = () => {
 
   return (
     <div className="not-found-view">
-      <div className="not-found-container">
+      <div className="page-container not-found-page-container">
+        <div className="not-found-container">
         {/* Decorative Inline SVG Commit Graph */}
         <div className="not-found-graphic" aria-hidden="true">
           <svg
@@ -115,6 +116,7 @@ export const NotFound: React.FC = () => {
             <span>Report a problem</span>
           </Link>
         </div>
+      </div>
       </div>
     </div>
   );

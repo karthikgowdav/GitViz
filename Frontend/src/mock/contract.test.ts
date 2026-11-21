@@ -56,6 +56,19 @@ describe('API Contract Verification (Mock Fixtures)', () => {
       expect(typeof file.commit_count).toBe('number');
       expect(typeof file.last_touch_at).toBe('string');
     });
+
+    it('has commit_count matching available history entry lengths (14 for router.ts, 4 for package.json)', () => {
+      const routerFile = filesData.find((f) => f.path === 'src/core/router.ts');
+      const packageFile = filesData.find((f) => f.path === 'package.json');
+
+      expect(routerFile).toBeDefined();
+      expect(routerFile?.commit_count).toBe(fileHistoryData.entries.length);
+      expect(routerFile?.commit_count).toBe(14);
+
+      expect(packageFile).toBeDefined();
+      expect(packageFile?.commit_count).toBe(fileHistorySimpleData.entries.length);
+      expect(packageFile?.commit_count).toBe(4);
+    });
   });
 
   describe('file-history.json and simple variant contract', () => {
