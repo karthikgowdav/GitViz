@@ -1,6 +1,5 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Database, FilterX, RotateCcw, FolderGit2, GitBranch } from 'lucide-react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { Database, FilterX, FolderGit2, GitBranch } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useCommits } from '../api/hooks';
 import { USE_MOCK } from '../api/client';
@@ -14,6 +13,7 @@ import { computeCommitGraphLayout } from '../components/graph/layout/laneLayout'
 import { LoadingSkeleton, EmptyState, ErrorState } from '../components/states';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
+import { ChangeRepoButton } from '../components/ui/ChangeRepoButton';
 import './CommitGraph.css';
 
 const INITIAL_FILTERS: GraphFilterState = {
@@ -25,8 +25,7 @@ const INITIAL_FILTERS: GraphFilterState = {
 
 export const CommitGraph: React.FC = () => {
   usePageTitle('Commit Graph');
-  const navigate = useNavigate();
-  const { repo, activeRepoId, clearRepo } = useRepo();
+  const { repo, activeRepoId } = useRepo();
 
   // Support ?state=loading|empty|error dev switches for testing
   const isDevTesting = typeof window !== 'undefined' && Boolean(new URLSearchParams(window.location.search).get('state'));
@@ -38,7 +37,9 @@ export const CommitGraph: React.FC = () => {
   );
   const [filters, setFilters] = useState<GraphFilterState>(INITIAL_FILTERS);
   const [selectedCommit, setSelectedCommit] = useState<Commit | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(true);
   const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false);
+  const detailsToggleRef = useRef<HTMLButtonElement>(null);
 
   const rawCommits = useMemo(() => data?.commits || [], [data?.commits]);
 
@@ -126,8 +127,22 @@ export const CommitGraph: React.FC = () => {
     }
   }, [filteredCommits, selectedCommit]);
 
+  const handleCloseDetails = () => {
+    setIsDetailsOpen(false);
+    setMobileDetailsOpen(false);
+    setTimeout(() => {
+      detailsToggleRef.current?.focus();
+    }, 0);
+  };
+
+  const handleOpenDetails = () => {
+    setIsDetailsOpen(true);
+    setMobileDetailsOpen(true);
+  };
+
   const handleSelectCommit = (commit: Commit) => {
     setSelectedCommit(commit);
+    setIsDetailsOpen(true);
     setMobileDetailsOpen(true);
   };
 
@@ -137,6 +152,7 @@ export const CommitGraph: React.FC = () => {
     );
     if (target) {
       setSelectedCommit(target);
+      setIsDetailsOpen(true);
       setMobileDetailsOpen(true);
     }
   };
@@ -168,17 +184,7 @@ export const CommitGraph: React.FC = () => {
           </div>
           {repo?.status === 'done' && (
             <div className="commit-graph-header-actions">
-              <Button
-                variant="ghost"
-                size="md"
-                leadingIcon={<RotateCcw size={15} />}
-                onClick={() => {
-                  clearRepo();
-                  navigate('/load');
-                }}
-              >
-                Load a different repository
-              </Button>
+              <ChangeRepoButton />
             </div>
           )}
         </div>
@@ -204,6 +210,9 @@ export const CommitGraph: React.FC = () => {
               branches={branches}
               totalCount={rawCommits.length}
               filteredCount={filteredCommits.length}
+              isDetailsOpen={isDetailsOpen}
+              onToggleDetails={handleOpenDetails}
+              detailsToggleRef={detailsToggleRef}
             />
 
             {/* Legend and Filter Notice Banner */}
@@ -252,7 +261,7 @@ export const CommitGraph: React.FC = () => {
               />
             ) : (
               /* Split Layout: Virtualized List + Details Panel */
-              <div className="commit-graph-layout">
+              <div className={`commit-graph-layout ${!isDetailsOpen ? 'panel-collapsed' : ''}`}>
                 <div className="commit-graph-list-col">
                   <CommitList
                     commits={filteredCommits}
@@ -265,17 +274,19 @@ export const CommitGraph: React.FC = () => {
                   />
                 </div>
 
-                <div
-                  className={`commit-graph-details-col ${
-                    mobileDetailsOpen ? 'mobile-open' : ''
-                  }`}
-                >
-                  <CommitDetails
-                    commit={selectedCommit}
-                    onClose={() => setMobileDetailsOpen(false)}
-                    onSelectSha={handleSelectSha}
-                  />
-                </div>
+                {isDetailsOpen && (
+                  <div
+                    className={`commit-graph-details-col ${
+                      mobileDetailsOpen ? 'mobile-open' : ''
+                    }`}
+                  >
+                    <CommitDetails
+                      commit={selectedCommit}
+                      onClose={handleCloseDetails}
+                      onSelectSha={handleSelectSha}
+                    />
+                  </div>
+                )}
               </div>
             )}
           </>

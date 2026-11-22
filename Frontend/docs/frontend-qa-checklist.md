@@ -193,7 +193,7 @@ In accordance with **P4 PRD Rule 7** (*"Honesty week: scan every claim — no 'f
 
 ---
 
-## 3. Session Reentry & Upload Entry Point Verification Suite
+## 4. Session Reentry & Upload Entry Point Verification Suite
 
 | # | Test Scenario | Steps | Expected Result | Pass? |
 |---|---------------|-------|-----------------|-------|
@@ -206,3 +206,36 @@ In accordance with **P4 PRD Rule 7** (*"Honesty week: scan every claim — no 'f
 | 7 | **Recent Chips Behavior** | On `/load`, click a chip from the "Recent repositories" list | Path input is populated with the selected path and focused. Ingestion does NOT start automatically; user must click *"Start import"*. | [ ] |
 | 8 | **Change Affordance on Loaded Repo** | After loading a repository, click the header status chip (showing `<name> Change`) | Opens `/load` displaying the form pre-filled with the current path and a note: *"Loading a new repository replaces the current one."* | [ ] |
 | 9 | **Load a Different Repository** | From `/graph`, `/files`, or `/dashboard`, click *"Load a different repository"* in the page header | Clears the active repository from context and navigates to `/load` with an empty path input and no replacement banner. | [ ] |
+
+---
+
+## 5. Load Flow Regression & Monotonicity Verification Suite
+
+| # | Test Scenario | Steps | Expected Result | Pass? |
+|---|---------------|-------|-----------------|-------|
+| 1 | **Monotonic Progress from 0% (BUG 1)** | Load repo `abc` to completion. Return to `/load` and load path `xyz`. Observe progress initialization. | Progress bar strictly starts at 0% with step label "Queued". Never shows 100% or "Import finished" from the previous run; advances monotonically (0% -> 25% -> 50% -> 75% -> 100%). | [ ] |
+| 2 | **Consecutive Multi-Load Longevity (BUG 2)** | Load 6 repositories sequentially without refreshing the browser (`repo-1` through `repo-6`, including different casing and identical paths). After each load finishes, visit `/graph`, `/files`, and `/dashboard`. | Every data page displays the new repository data. The app NEVER falls back to "No repository loaded" after 3, 4, or more loads. Ingest status stays `done`. | [ ] |
+| 3 | **Background Polling & Route Independence (BUG 2)** | Start importing a repository on `/load`. Immediately click "Commit Graph" in the navigation while progress is ~25%. | Ingestion polling continues at the root `RepoContext` level. When finished, context automatically transitions to `done`, header status chip turns green, and Commit Graph displays the newly loaded data without needing to remain on `/load`. | [ ] |
+| 4 | **Current Repository Card (BUG 3)** | With a repository currently loaded, navigate to `/load`. | A "Current Repository" card renders at the top displaying the repo name, path, commit count badge, clear button, and notice: *"Loading a new repository replaces the current one."* | [ ] |
+| 5 | **"Clear and Load Another" Action (BUG 3)** | On the Current Repository card, click "Clear and load another". | Clears the loaded repo from context and storage, clears the form, focuses the empty input field with placeholder, and displays a clean fresh entry form. | [ ] |
+| 6 | **Input Inline Clear (X) Button (BUG 3)** | Type a path in the repository location input field. Click the (X) clear button. | The input field is emptied and receives keyboard focus. Any client error is cleared. If a repository was already loaded, it remains intact. | [ ] |
+| 7 | **Failed Second Import Protection (BUG 3)** | With repository `stable-repo` loaded, attempt to import `/does/not/exist`. | Error alert appears ("Could not load repository: Path not found or not a Git repository"). Crucially, `stable-repo` remains active in context, in the header chip, and in the Current Repository card. Data pages continue to show `stable-repo`. | [ ] |
+| 8 | **Header Load Button Reactivity on `/load` (BUG 4)** | While already on `/load` with text typed in the path input or a finished progress card visible, click the header "Load Repository" button. | The view resets to a clean empty state: path input is cleared and focused, any in-progress or finished card is dismissed, page scrolls to top. The currently loaded repository in context remains untouched. | [ ] |
+| 9 | **Hero Quick-Start Safe Auto-Load (BUG 4)** | On `/`, enter a path in the hero input and click "Load Repository". | Navigates to `/load` and triggers import automatically exactly once. Guarded against React 18 StrictMode double-execution. | [ ] |
+
+---
+
+## 6. Recent Repositories Deduplication & Item Removal Verification Suite
+
+| # | Test Scenario | Steps | Expected Result | Pass? |
+|---|---------------|-------|-----------------|-------|
+| 1 | **Deduplication on Reload (Path Normalization)** | On `/load`, import path `abc`, then import `abc` again, then import `ABC`. Inspect the Recent repositories list. | Only one single entry appears for `abc`/`ABC`. Loading an existing path never adds duplicate chips; it moves the entry to index 0 and updates its timestamp. | [ ] |
+| 2 | **Slash & Backslash Equivalence** | Import `C:\projects\gitviz` and later `C:/projects/gitviz/`. | Windows backslashes and forward slashes, trailing slashes, and casing are treated as identical under `normalizePathKey`. No duplicate chip is created. | [ ] |
+| 3 | **Automatic Clean-up of Stored Duplicates** | With legacy localStorage containing `[{ path: 'repo', name: 'repo' }, { path: 'REPO/', name: 'REPO' }]`, open `/load`. | `loadRecentRepos()` automatically deduplicates the list on read and writes back the cleaned single entry to localStorage. | [ ] |
+| 4 | **No Repeated Text on Chip** | Add a repository where the name and path are identical (e.g. `abcdefgh`). | Chip displays only the repository name once. Secondary path text is hidden. It does NOT repeat "abcdefgh abcdefgh". | [ ] |
+| 5 | **Secondary Path Display & Truncation** | Add a repository with a directory path (e.g. `C:/Users/developer/projects/gitviz-frontend-monorepo`). | Chip shows the name as primary text and the path as secondary text. Long paths (> 30 chars) are middle-truncated with `...` (`C:/Users/devel...nter-monorepo`). Full untruncated path is available in the title tooltip. | [ ] |
+| 6 | **Chip Click Fills Input Only** | Click the main button area of any recent repository chip. | The repository path is placed into the path input and focused. Ingestion does NOT start automatically; the user must explicitly submit. Currently loaded repo is untouched. | [ ] |
+| 7 | **Individual Item Removal (X Button)** | Click the small (X) button on a specific recent repository chip. | Only that specific entry is removed from the list and from localStorage. Sibling recent chips remain intact. The currently loaded repository in context is unaffected. | [ ] |
+| 8 | **Keyboard Focus Advance on Removal** | Focus the (X) button of an item using Tab and press Enter or Space. | Item is removed. Focus immediately moves to the next item's main button. If the removed item was the last entry, focus moves to the path input. | [ ] |
+| 9 | **Empty State Section Hiding** | Remove all recent items one by one (or click "Clear recent"). | The entire "Recent repositories" section is hidden cleanly from the DOM. | [ ] |
+| 10 | **Accessibility, Semantic HTML & Hit Areas** | Inspect DOM structure of recent repositories. Test at 360px viewport. | List is rendered as `<ul aria-label="Recent repositories list">` and `<li>`. The chip button and remove button are separate siblings (not nested). Both buttons have hit areas of at least 40x40px, visible focus rings, hover states (danger tint on X), and distinct accessible labels (`aria-label="Remove <name> from recent repositories"`). Respects `prefers-reduced-motion`. | [ ] |

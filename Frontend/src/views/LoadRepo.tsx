@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Database, AlertCircle, Info, FolderGit2 } from 'lucide-react';
+import { Database, AlertCircle, FolderGit2, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useCreateRepo } from '../api/hooks';
 import { USE_MOCK } from '../api/client';
 import { useRepo } from '../context/RepoContext';
 import { Badge } from '../components/ui/Badge';
+import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
 import { RepoPathForm } from '../components/load/RepoPathForm';
 import { ImportProgress } from '../components/load/ImportProgress';
 import { WhatHappensCard } from '../components/load/WhatHappensCard';
@@ -16,14 +18,14 @@ export const LoadRepo: React.FC = () => {
   usePageTitle('Load Repository');
   const location = useLocation();
 
-  const { repo, setRepo } = useRepo();
+  const { repo, activeImport, startImport, clearRepo, clearActiveImport } = useRepo();
   const createRepoMutation = useCreateRepo();
 
-  // Local state for active session path & error
+  // Local state for active input path & errors
   const [activePath, setActivePath] = useState(repo?.path || '');
   const [serverError, setServerError] = useState<Error | null>(null);
-  const [isImportStarted, setIsImportStarted] = useState(false);
-  const autoLoadedRef = useRef(false);
+  const [formKey, setFormKey] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Check if a prior import was interrupted by a page refresh
   const [interruptedNotice, setInterruptedNotice] = useState(() => {
@@ -44,32 +46,18 @@ export const LoadRepo: React.FC = () => {
     setServerError(null);
     setInterruptedNotice(false);
     setActivePath(submittedPath);
-    setIsImportStarted(true);
-
-    try {
-      sessionStorage.setItem('gitviz_import_in_progress', 'true');
-    } catch {
-      // Ignore
-    }
 
     try {
       const res = await createRepoMutation.mutateAsync({ path: submittedPath });
-
-      // Save initial ingestion state into RepoContext
       const repoName = getRepoNameFromPath(submittedPath);
-      setRepo({
+
+      startImport({
         repoId: res.repo_id,
+        runId: (res as { run_id?: number }).run_id,
         name: repoName,
         path: submittedPath,
-        status: 'ingesting',
-        commitCount: 0,
       });
     } catch (err) {
-      try {
-        sessionStorage.removeItem('gitviz_import_in_progress');
-      } catch {
-        // Ignore
-      }
       setServerError(
         err instanceof Error
           ? err
@@ -78,45 +66,72 @@ export const LoadRepo: React.FC = () => {
     }
   };
 
-  // Auto-start import if triggered from Home quick-start location state
+  // Handle fresh parameter from Header / Mobile / CTA / ChangeRepoButton
+  // Trigger on location.key so repeated clicks on /load work cleanly
+  const lastFreshKeyRef = useRef<string | null>(null);
   useEffect(() => {
-    const autoLoadPath = location.state?.autoLoadPath;
-    if (autoLoadPath && typeof autoLoadPath === 'string' && !autoLoadedRef.current) {
-      autoLoadedRef.current = true;
+    if (location.state?.fresh && lastFreshKeyRef.current !== location.key) {
+      lastFreshKeyRef.current = location.key;
+      clearActiveImport();
+      setActivePath('');
+      setServerError(null);
+      setInterruptedNotice(false);
+      setFormKey((k) => k + 1);
+      try {
+        window.scrollTo(0, 0);
+      } catch {
+        // Safe in test environments
+      }
       try {
         window.history.replaceState({}, document.title);
       } catch {
         // Ignore
       }
+    }
+  }, [location.key, location.state, clearActiveImport]);
+
+  // Auto-start import if triggered from Home quick-start location state (guard against StrictMode)
+  const lastAutoLoadKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    const autoLoadPath = location.state?.autoLoadPath;
+    if (
+      autoLoadPath &&
+      typeof autoLoadPath === 'string' &&
+      lastAutoLoadKeyRef.current !== location.key
+    ) {
+      lastAutoLoadKeyRef.current = location.key;
+      try {
+        window.history.replaceState({}, document.title);
+      } catch {
+        // Ignore
+      }
+      setActivePath(autoLoadPath);
       handleSubmitPath(autoLoadPath);
     }
-  }, [location.state]);
+  }, [location.key, location.state]);
 
   const handleResetImport = (keepPath: boolean = true) => {
     createRepoMutation.reset();
     setServerError(null);
-    setIsImportStarted(false);
-    try {
-      sessionStorage.removeItem('gitviz_import_in_progress');
-    } catch {
-      // Ignore
-    }
+    clearActiveImport();
     if (!keepPath) {
       setActivePath('');
     }
-    // Clear in-progress repo from context so form is displayed
-    if (repo?.status === 'ingesting' || repo?.status === 'error') {
-      setRepo(null);
-    }
+    setFormKey((k) => k + 1);
   };
 
-  const isCurrentlyImporting =
-    (repo?.status === 'ingesting' && Boolean(repo.repoId)) ||
-    createRepoMutation.isPending;
+  const handleClearAndLoadAnother = () => {
+    clearRepo();
+    clearActiveImport();
+    setActivePath('');
+    setServerError(null);
+    setFormKey((k) => k + 1);
+  };
 
-  const showImportProgress = isImportStarted && (isCurrentlyImporting || repo?.status === 'done' || repo?.status === 'error');
+  const showImportProgress = Boolean(activeImport);
+  // Teammate contract: activeRepoId must return '' when USE_MOCK is false
   const activeRepoId = repo?.repoId || (USE_MOCK ? 'sample-repo' : '');
-  const displayPath = activePath || repo?.path || '';
+  const displayPath = activeImport?.path || activePath || repo?.path || '';
 
   return (
     <div className="load-repo-view">
@@ -151,26 +166,57 @@ export const LoadRepo: React.FC = () => {
               </div>
             )}
 
+            {/* Current Loaded Repository Card (Bug 3) */}
+            {repo?.status === 'done' && (
+              <Card className="current-repo-card">
+                <div className="current-repo-header">
+                  <div className="current-repo-title-wrap">
+                    <span className="current-repo-badge">Current Repository</span>
+                    <h2 className="current-repo-name">{repo.name}</h2>
+                    <code className="current-repo-path" title={repo.path}>
+                      {repo.path}
+                    </code>
+                  </div>
+                  <div className="current-repo-actions">
+                    <Badge variant="success" icon={<CheckCircle2 size={13} aria-hidden="true" />}>
+                      Loaded · {(repo.commitCount || 0).toLocaleString()} commits
+                    </Badge>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="md"
+                      leadingIcon={<RefreshCw size={15} />}
+                      onClick={handleClearAndLoadAnother}
+                      className="current-repo-clear-btn"
+                    >
+                      Clear and load another
+                    </Button>
+                  </div>
+                </div>
+                <p className="current-repo-note">
+                  Loading a new repository replaces the current one.
+                </p>
+              </Card>
+            )}
+
             {showImportProgress ? (
               <ImportProgress
+                importInfo={activeImport}
                 repoId={activeRepoId}
                 repoPath={displayPath}
                 onReset={handleResetImport}
               />
             ) : (
               <div className="load-repo-form-wrapper">
-                {repo?.status === 'done' && (
-                  <div className="replace-repo-note" role="note">
-                    <Info size={15} aria-hidden="true" />
-                    <span>Loading a new repository replaces the current one.</span>
-                  </div>
-                )}
                 <RepoPathForm
+                  key={formKey}
                   onSubmit={handleSubmitPath}
                   isSubmitting={createRepoMutation.isPending}
                   serverError={serverError}
                   onClearServerError={() => setServerError(null)}
-                  initialPath={activePath || repo?.path || ''}
+                  initialPath={activePath}
+                  onResetProgress={() => handleResetImport(false)}
+                  inputRef={inputRef}
                 />
                 {USE_MOCK && (
                   <p className="mock-mode-note">

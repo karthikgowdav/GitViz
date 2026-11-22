@@ -13,33 +13,34 @@ import {
 } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
-import { useRepoStatus } from '../../api/hooks';
-import { useRepo } from '../../context/RepoContext';
-import { getStepItems, getRepoNameFromPath, addRecentRepo, loadRecentRepos, saveRecentRepos } from './loadUtils';
+import { useRepo, ActiveImportInfo } from '../../context/RepoContext';
+import { getStepItems, getRepoNameFromPath } from './loadUtils';
 import './ImportProgress.css';
 
 interface ImportProgressProps {
-  repoId: string;
-  repoPath: string;
+  importInfo?: ActiveImportInfo | null;
+  repoId?: string;
+  repoPath?: string;
   onReset: (keepPath?: boolean) => void;
 }
 
 export const ImportProgress: React.FC<ImportProgressProps> = ({
-  repoId,
-  repoPath,
+  importInfo,
+  repoPath: propRepoPath,
   onReset,
 }) => {
   const navigate = useNavigate();
-  const { setRepo } = useRepo();
+  const { repo, activeImport } = useRepo();
 
-  // Poll status while not terminal
-  const { data: status, error: queryError } = useRepoStatus(repoId, true);
+  const current = importInfo || activeImport;
+  const effectiveRepoPath = current?.path || propRepoPath || '';
+  const effectiveRepoName = current?.name || getRepoNameFromPath(effectiveRepoPath);
 
-  const pct = status ? Math.max(0, Math.min(100, status.pct)) : 0;
-  const commitCount = status?.commit_count ?? 0;
-  const isDone = status?.status === 'done' || pct >= 100;
-  const isError = status?.status === 'error' || Boolean(queryError);
-  const errorMessage = status?.error || queryError?.message || 'Failed to complete repository import';
+  const pct = current ? Math.max(0, Math.min(100, current.pct)) : 0;
+  const commitCount = current?.commitCount ?? 0;
+  const isDone = current?.status === 'done' || pct >= 100;
+  const isError = current?.status === 'error';
+  const errorMessage = current?.error || 'Failed to complete repository import';
 
   // Live region milestone announcer (only at 25, 50, 75, 100%)
   const [announcement, setAnnouncement] = useState('');
@@ -60,46 +61,7 @@ export const ImportProgress: React.FC<ImportProgressProps> = ({
     }
   }, [pct, commitCount]);
 
-  // When import completes, persist in RepoContext and recent repositories list
-  const hasSavedContextRef = useRef(false);
-  useEffect(() => {
-    if (isDone && !hasSavedContextRef.current) {
-      hasSavedContextRef.current = true;
-      const repoName = getRepoNameFromPath(repoPath);
-
-      setRepo({
-        repoId,
-        name: repoName,
-        path: repoPath,
-        status: 'done',
-        commitCount,
-      });
-
-      // Update recent repositories list
-      const recents = loadRecentRepos();
-      const updated = addRecentRepo(recents, { path: repoPath, name: repoName });
-      saveRecentRepos(updated);
-
-      try {
-        sessionStorage.removeItem('gitviz_import_in_progress');
-      } catch {
-        // Ignore storage errors
-      }
-    }
-  }, [isDone, repoId, repoPath, commitCount, setRepo]);
-
-  useEffect(() => {
-    if (isError) {
-      try {
-        sessionStorage.removeItem('gitviz_import_in_progress');
-      } catch {
-        // Ignore storage errors
-      }
-    }
-  }, [isError]);
-
   const stepItems = getStepItems(pct);
-  const repoName = getRepoNameFromPath(repoPath);
 
   return (
     <Card className="import-progress-card">
@@ -112,9 +74,9 @@ export const ImportProgress: React.FC<ImportProgressProps> = ({
       <div className="import-progress-header">
         <div>
           <span className="import-target-label">Importing repository</span>
-          <h2 className="import-target-name">{repoName}</h2>
-          <code className="import-target-path" title={repoPath}>
-            {repoPath}
+          <h2 className="import-target-name">{effectiveRepoName}</h2>
+          <code className="import-target-path" title={effectiveRepoPath}>
+            {effectiveRepoPath}
           </code>
         </div>
 
@@ -245,7 +207,13 @@ export const ImportProgress: React.FC<ImportProgressProps> = ({
             <div>
               <h3 className="error-title">Import encountered an error</h3>
               <p className="error-desc">{errorMessage}</p>
-              <p className="error-safe-note">Your repository was not changed.</p>
+              {repo?.status === 'done' ? (
+                <p className="error-safe-note">
+                  The previous repository (<strong>{repo.name}</strong>) remains active.
+                </p>
+              ) : (
+                <p className="error-safe-note">Your repository was not changed.</p>
+              )}
             </div>
           </div>
 

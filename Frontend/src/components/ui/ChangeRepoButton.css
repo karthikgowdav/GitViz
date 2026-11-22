@@ -1,0 +1,38 @@
+/**
+ * ChangeRepoButton Styles
+ * Secondary outlined action button to clear and change repository.
+ */
+
+.change-repo-btn {
+  height: 40px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+  padding: 0 var(--space-4);
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+}
+
+.change-repo-btn:hover:not(:disabled) {
+  background-color: var(--color-surface-hover);
+  border-color: var(--color-accent);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.change-repo-btn:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Mobile responsive full width at 360px and stacked below title */
+@media (max-width: 640px) {
+  .change-repo-btn {
+    width: 100%;
+    min-height: 40px;
+    justify-content: center;
+  }
+}

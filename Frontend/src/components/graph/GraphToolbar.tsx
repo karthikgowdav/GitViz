@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, ChevronDown, RotateCcw } from 'lucide-react';
+import { Search, ChevronDown, RotateCcw, PanelRightOpen } from 'lucide-react';
 import { Button } from '../ui/Button';
 import './GraphToolbar.css';
 
@@ -18,6 +18,9 @@ interface GraphToolbarProps {
   branches: string[];
   totalCount: number;
   filteredCount: number;
+  isDetailsOpen?: boolean;
+  onToggleDetails?: () => void;
+  detailsToggleRef?: React.Ref<HTMLButtonElement>;
 }
 
 export const GraphToolbar: React.FC<GraphToolbarProps> = ({
@@ -28,6 +31,9 @@ export const GraphToolbar: React.FC<GraphToolbarProps> = ({
   branches,
   totalCount,
   filteredCount,
+  isDetailsOpen = true,
+  onToggleDetails,
+  detailsToggleRef,
 }) => {
   const isFilterActive =
     Boolean(filters.searchQuery) ||
@@ -127,6 +133,20 @@ export const GraphToolbar: React.FC<GraphToolbarProps> = ({
             >
               Reset filters
             </Button>
+          )}
+
+          {!isDetailsOpen && onToggleDetails && (
+            <button
+              ref={detailsToggleRef}
+              type="button"
+              className="btn btn-secondary btn-md graph-details-toggle-btn"
+              onClick={onToggleDetails}
+              aria-label="Show commit details"
+              aria-expanded={false}
+            >
+              <PanelRightOpen size={16} aria-hidden="true" />
+              <span>Details</span>
+            </button>
           )}
         </div>
       </div>

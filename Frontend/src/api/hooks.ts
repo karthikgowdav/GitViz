@@ -13,6 +13,7 @@ import {
   getBusFactor,
   createRepo,
   getRepoStatus,
+  USE_MOCK,
 } from './client';
 import {
   CommitDetail,
@@ -139,10 +140,11 @@ export function useCreateRepo() {
  */
 export function useRepoStatus(
   repoId: string | null | undefined,
-  enabled: boolean = true
+  enabled: boolean = true,
+  runId?: number | string
 ) {
   return useQuery<RepoStatus, Error>({
-    queryKey: [REPO_STATUS_QUERY_KEY, repoId],
+    queryKey: [REPO_STATUS_QUERY_KEY, repoId, runId ?? 0],
     queryFn: () => {
       if (!repoId) {
         throw new Error('Repository ID is required to fetch status');
@@ -152,11 +154,10 @@ export function useRepoStatus(
     enabled: Boolean(repoId) && enabled,
     refetchInterval: (query) => {
       const data = query.state.data;
-      if (!data) return 1000;
-      if (data.status === 'done' || data.status === 'error') {
+      if (data?.status === 'done' || data?.status === 'error') {
         return false;
       }
-      return 1000;
+      return USE_MOCK ? 600 : 1000;
     },
     staleTime: 0,
     gcTime: 5 * 60 * 1000,
