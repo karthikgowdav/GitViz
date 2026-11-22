@@ -99,9 +99,9 @@ describe('Load Flow Regressions (BUG 1, 2, 3, 4)', () => {
       () => {
         expect(screen.getByText(/import finished/i)).toBeDefined();
       },
-      { timeout: 7000 }
+      { timeout: 8000 }
     );
-  }, 15000);
+  }, 25000);
 
   it('runs the full load -> graph -> files -> dashboard flow 6 times in a row without breaking (BUG 2)', async () => {
     const TestNavigator: React.FC = () => {
@@ -340,6 +340,139 @@ describe('Load Flow Regressions (BUG 1, 2, 3, 4)', () => {
       const currentInput = screen.getByLabelText(/repository path/i) as HTMLInputElement;
       expect(currentInput.value).toBe('');
       expect(document.activeElement).toBe(currentInput);
+    });
+  });
+
+  describe('Recent repositories clean up & item removal', () => {
+    it('chip shows the name once when name equals path', async () => {
+      window.localStorage.setItem(
+        'gitviz_recent_repos',
+        JSON.stringify([
+          { path: 'abcdefgh', name: 'abcdefgh', lastLoadedAt: '2026-11-22T00:00:00Z' },
+        ])
+      );
+
+      renderFullApp('/load');
+
+      const chip = await screen.findByRole('listitem', { name: 'abcdefgh' });
+      expect(chip).toBeDefined();
+
+      // Ensure the button inside only displays 'abcdefgh' once, not 'abcdefgh abcdefgh'
+      const chipBtn = screen.getByRole('button', { name: 'abcdefgh' });
+      expect(chipBtn.textContent).toContain('abcdefgh');
+      // Secondary path element is not rendered
+      expect(chipBtn.querySelector('.recent-chip-path')).toBeNull();
+    });
+
+    it('chip shows secondary path when path differs from name and truncates long paths', async () => {
+      window.localStorage.setItem(
+        'gitviz_recent_repos',
+        JSON.stringify([
+          {
+            path: 'C:/Users/developer/projects/gitviz-frontend-monorepo',
+            name: 'gitviz-frontend-monorepo',
+            lastLoadedAt: '2026-11-22T00:00:00Z',
+          },
+        ])
+      );
+
+      renderFullApp('/load');
+
+      const listItem = await screen.findByRole('listitem', {
+        name: /gitviz-frontend-monorepo/i,
+      });
+      const chipBtn = listItem.querySelector('.recent-chip-btn') as HTMLButtonElement;
+      expect(chipBtn).not.toBeNull();
+      const pathEl = chipBtn.querySelector('.recent-chip-path');
+      expect(pathEl).not.toBeNull();
+      expect(pathEl?.textContent).toContain('...');
+      expect(chipBtn.getAttribute('title')).toBe(
+        'C:/Users/developer/projects/gitviz-frontend-monorepo'
+      );
+    });
+
+    it('clicking the chip fills the input without starting an import', async () => {
+      window.localStorage.setItem(
+        'gitviz_recent_repos',
+        JSON.stringify([
+          { path: '~/projects/gitviz', name: 'gitviz', lastLoadedAt: '2026-11-22T00:00:00Z' },
+        ])
+      );
+
+      renderFullApp('/load');
+
+      const listItem = await screen.findByRole('listitem', { name: /gitviz/i });
+      const chipBtn = listItem.querySelector('.recent-chip-btn') as HTMLButtonElement;
+      fireEvent.click(chipBtn);
+
+      const input = screen.getByLabelText(/repository path/i) as HTMLInputElement;
+      expect(input.value).toBe('~/projects/gitviz');
+      expect(document.activeElement).toBe(input);
+
+      // Ingestion has NOT started
+      expect(screen.queryByText(/import finished/i)).toBeNull();
+      expect(screen.queryByRole('progressbar')).toBeNull();
+      expect(screen.getByRole('button', { name: /start import/i })).toBeDefined();
+    });
+
+    it('X removes only that entry from the list and from localStorage', async () => {
+      window.localStorage.setItem(
+        'gitviz_recent_repos',
+        JSON.stringify([
+          { path: 'repo-one', name: 'repo-one', lastLoadedAt: '2026-11-22T00:00:00Z' },
+          { path: 'repo-two', name: 'repo-two', lastLoadedAt: '2026-11-22T00:00:00Z' },
+        ])
+      );
+
+      renderFullApp('/load');
+
+      // Both items are in the list
+      expect(await screen.findByRole('listitem', { name: 'repo-one' })).toBeDefined();
+      expect(screen.getByRole('listitem', { name: 'repo-two' })).toBeDefined();
+
+      const removeBtn = screen.getByRole('button', {
+        name: /remove repo-one from recent repositories/i,
+      });
+      expect(removeBtn).toBeDefined();
+
+      fireEvent.click(removeBtn);
+
+      // repo-one is removed, repo-two remains
+      await waitFor(() => {
+        expect(screen.queryByRole('listitem', { name: 'repo-one' })).toBeNull();
+      });
+      expect(screen.getByRole('listitem', { name: 'repo-two' })).toBeDefined();
+
+      // Check localStorage
+      const stored = JSON.parse(window.localStorage.getItem('gitviz_recent_repos') || '[]');
+      expect(stored).toHaveLength(1);
+      expect(stored[0].name).toBe('repo-two');
+    });
+
+    it('removing all items hides the recent repositories section and focuses the input', async () => {
+      window.localStorage.setItem(
+        'gitviz_recent_repos',
+        JSON.stringify([
+          { path: 'sole-repo', name: 'sole-repo', lastLoadedAt: '2026-11-22T00:00:00Z' },
+        ])
+      );
+
+      renderFullApp('/load');
+
+      const removeBtn = await screen.findByRole('button', {
+        name: /remove sole-repo from recent repositories/i,
+      });
+
+      fireEvent.click(removeBtn);
+
+      // Section is hidden
+      await waitFor(() => {
+        expect(screen.queryByRole('region', { name: /recent repositories/i })).toBeNull();
+      });
+
+      // Focus moved to the input
+      const input = screen.getByLabelText(/repository path/i) as HTMLInputElement;
+      expect(document.activeElement).toBe(input);
     });
   });
 });

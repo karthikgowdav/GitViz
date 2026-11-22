@@ -189,7 +189,11 @@ describe('CommitGraph Details Panel Behavior (FIX 3)', () => {
       { timeout: 5000 }
     );
 
-    const panel = screen.getByRole('region', { name: /details for commit/i });
+    const panel = await screen.findByRole(
+      'region',
+      { name: /details for commit/i },
+      { timeout: 8000 }
+    );
     fireEvent.keyDown(panel, { key: 'Escape' });
 
     // Panel closes

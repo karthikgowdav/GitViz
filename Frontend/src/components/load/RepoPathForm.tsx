@@ -5,7 +5,11 @@ import { Button } from '../ui/Button';
 import {
   validateRepoPath,
   loadRecentRepos,
+  saveRecentRepos,
   clearRecentRepos,
+  removeRecentRepo,
+  shouldShowSecondaryPath,
+  truncateMiddle,
   RecentRepo,
 } from './loadUtils';
 import './RepoPathForm.css';
@@ -79,18 +83,46 @@ export const RepoPathForm: React.FC<RepoPathFormProps> = ({
     onSubmit(path.trim());
   };
 
+  const itemButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
   const handleSelectRecent = (recentPath: string) => {
     setPath(recentPath);
     setClientError(null);
     if (serverError) onClearServerError();
-    if (inputRef.current) {
+    if (inputRef && inputRef.current) {
       inputRef.current.focus();
+    }
+  };
+
+  const handleRemoveRecent = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    pathToRemove: string,
+    index: number
+  ) => {
+    e.stopPropagation();
+    const updated = removeRecentRepo(recentRepos, pathToRemove);
+    setRecentRepos(updated);
+    saveRecentRepos(updated);
+
+    // After removing, move focus to the next item's main button, or to the path input if the list is now empty.
+    if (updated.length === 0) {
+      if (inputRef && inputRef.current) {
+        inputRef.current.focus();
+      }
+    } else {
+      const nextFocusIndex = Math.min(index, updated.length - 1);
+      setTimeout(() => {
+        itemButtonRefs.current[nextFocusIndex]?.focus();
+      }, 0);
     }
   };
 
   const handleClearRecent = () => {
     clearRecentRepos();
     setRecentRepos([]);
+    if (inputRef && inputRef.current) {
+      inputRef.current.focus();
+    }
   };
 
   const hasError = Boolean(clientError || serverError);
@@ -227,9 +259,9 @@ export const RepoPathForm: React.FC<RepoPathFormProps> = ({
         </div>
       </form>
 
-      {/* Recent Repositories Chips */}
+      {/* Recent Repositories Section */}
       {recentRepos.length > 0 && (
-        <div className="recent-repos-section" aria-label="Recent repositories">
+        <section className="recent-repos-section" aria-label="Recent repositories">
           <div className="recent-repos-header">
             <div className="recent-repos-title">
               <Clock size={13} aria-hidden="true" />
@@ -246,24 +278,59 @@ export const RepoPathForm: React.FC<RepoPathFormProps> = ({
             </button>
           </div>
 
-          <div className="recent-chips-list" role="list">
-            {recentRepos.map((item) => (
-              <button
-                key={item.path}
-                type="button"
-                onClick={() => handleSelectRecent(item.path)}
-                disabled={isSubmitting}
-                className="recent-chip"
-                title={item.path}
-                role="listitem"
-              >
-                <FolderGit2 size={12} className="recent-chip-icon" aria-hidden="true" />
-                <span className="recent-chip-name">{item.name}</span>
-                <span className="recent-chip-path">{item.path}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+          <ul className="recent-chips-list" aria-label="Recent repositories list">
+            {recentRepos.map((item, index) => {
+              const hasSecondaryPath = shouldShowSecondaryPath(item.name, item.path);
+              return (
+                <li
+                  key={item.path}
+                  className="recent-chip-item"
+                  aria-label={hasSecondaryPath ? `${item.name} ${item.path}` : item.name}
+                  onClick={() => handleSelectRecent(item.path)}
+                >
+                  <div className="recent-chip-wrapper">
+                    <button
+                      ref={(el) => {
+                        itemButtonRefs.current[index] = el;
+                      }}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSelectRecent(item.path);
+                      }}
+                      disabled={isSubmitting}
+                      className="recent-chip-btn"
+                      title={item.path}
+                      aria-label={
+                        hasSecondaryPath
+                          ? `${item.name} (${item.path})`
+                          : item.name
+                      }
+                    >
+                      <FolderGit2 size={12} className="recent-chip-icon" aria-hidden="true" />
+                      <span className="recent-chip-name">{item.name}</span>
+                      {hasSecondaryPath && (
+                        <span className="recent-chip-path">
+                          {truncateMiddle(item.path, 30)}
+                        </span>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => handleRemoveRecent(e, item.path, index)}
+                      disabled={isSubmitting}
+                      className="recent-chip-remove-btn"
+                      aria-label={`Remove ${item.name} from recent repositories`}
+                      title={`Remove ${item.name} from recent repositories`}
+                    >
+                      <X size={13} aria-hidden="true" />
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
       )}
     </Card>
   );

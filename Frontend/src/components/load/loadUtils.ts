@@ -126,30 +126,88 @@ export function getStepItems(pct: number): ImportStepItem[] {
 }
 
 /**
- * Normalize path for deduplication comparisons (trims whitespace and removes trailing slashes)
+ * Normalize path for deduplication comparisons:
+ * - Trims whitespace
+ * - Replaces Windows backslashes (\) with forward slashes (/)
+ * - Removes trailing slashes (/ and \)
+ * - Compares case-insensitively (.toLowerCase())
  */
-function normalizePathForComparison(path: string): string {
-  return path.trim().replace(/[/\\]+$/, '').toLowerCase();
+export function normalizePathKey(path: string): string {
+  if (!path || typeof path !== 'string') return '';
+  const trimmed = path.trim();
+  const unified = trimmed.replace(/\\/g, '/');
+  const withoutTrailing = unified.replace(/\/+$/, '');
+  return (withoutTrailing || unified).toLowerCase();
+}
+
+/**
+ * Determine whether secondary path text should be displayed on a chip.
+ * Returns false when the repository name and path are identical under normalization.
+ */
+export function shouldShowSecondaryPath(name: string, path: string): boolean {
+  if (!path || typeof path !== 'string') return false;
+  if (!name || typeof name !== 'string') return true;
+  return normalizePathKey(name) !== normalizePathKey(path);
+}
+
+/**
+ * Truncate a path in the middle with an ellipsis (...) if it exceeds maxLength.
+ */
+export function truncateMiddle(path: string, maxLength: number = 30): string {
+  if (!path || typeof path !== 'string') return '';
+  if (path.length <= maxLength) return path;
+  if (maxLength <= 5) return path.slice(0, maxLength);
+
+  const available = maxLength - 3;
+  const headLength = Math.ceil(available / 2);
+  const tailLength = Math.floor(available / 2);
+
+  return `${path.slice(0, headLength)}...${path.slice(path.length - tailLength)}`;
+}
+
+/**
+ * Deduplicate a list of recent repositories by normalized path key.
+ * Keeps the newest entry (first occurrence in array), drops subsequent duplicates,
+ * and limits list to MAX_RECENT_REPOS (5).
+ */
+export function dedupeRecentRepos(list: RecentRepo[]): RecentRepo[] {
+  if (!Array.isArray(list)) return [];
+  const seen = new Set<string>();
+  const result: RecentRepo[] = [];
+
+  for (const item of list) {
+    if (!item || typeof item.path !== 'string') continue;
+    const key = normalizePathKey(item.path);
+    if (!key) continue;
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(item);
+    }
+  }
+
+  return result.slice(0, MAX_RECENT_REPOS);
 }
 
 /**
  * Add or update an entry in recent repositories list.
- * Deduplicates by path, places newest at index 0, and limits list to MAX_RECENT_REPOS (5).
+ * Deduplicates by normalized path key, moves existing entry to index 0,
+ * updates its lastLoadedAt date, and limits list to MAX_RECENT_REPOS (5).
  */
 export function addRecentRepo(
   currentList: RecentRepo[],
   newEntry: { path: string; name?: string }
 ): RecentRepo[] {
-  const trimmedPath = newEntry.path.trim();
-  if (!trimmedPath) return currentList;
+  const trimmedPath = newEntry?.path?.trim();
+  if (!trimmedPath) return dedupeRecentRepos(currentList);
 
-  const repoName = newEntry.name || getRepoNameFromPath(trimmedPath);
-  const normalizedNew = normalizePathForComparison(trimmedPath);
+  const key = normalizePathKey(trimmedPath);
+  if (!key) return dedupeRecentRepos(currentList);
 
-  // Filter out any existing item with identical path
-  const remaining = currentList.filter(
-    (item) => normalizePathForComparison(item.path) !== normalizedNew
-  );
+  const cleanList = dedupeRecentRepos(currentList);
+  const existing = cleanList.find((item) => normalizePathKey(item.path) === key);
+  const repoName = newEntry.name || (existing ? existing.name : getRepoNameFromPath(trimmedPath));
+
+  const remaining = cleanList.filter((item) => normalizePathKey(item.path) !== key);
 
   const updatedEntry: RecentRepo = {
     path: trimmedPath,
@@ -161,7 +219,37 @@ export function addRecentRepo(
 }
 
 /**
- * Load recent repositories from localStorage safely
+ * Remove an entry from recent repositories list by path.
+ * Compares paths using normalizePathKey.
+ */
+export function removeRecentRepo(
+  currentList: RecentRepo[],
+  pathToRemove: string
+): RecentRepo[] {
+  if (!pathToRemove || typeof pathToRemove !== 'string' || !Array.isArray(currentList)) {
+    return Array.isArray(currentList) ? dedupeRecentRepos(currentList) : [];
+  }
+  const keyToRemove = normalizePathKey(pathToRemove);
+  if (!keyToRemove) return dedupeRecentRepos(currentList);
+
+  return dedupeRecentRepos(currentList).filter(
+    (item) => normalizePathKey(item.path) !== keyToRemove
+  );
+}
+
+/**
+ * Remove an entry from localStorage recent repositories safely.
+ */
+export function removeRecentRepoFromStorage(pathToRemove: string): RecentRepo[] {
+  const current = loadRecentRepos();
+  const updated = removeRecentRepo(current, pathToRemove);
+  saveRecentRepos(updated);
+  return updated;
+}
+
+/**
+ * Load recent repositories from localStorage safely.
+ * Cleans up and deduplicates stored lists on read, writing back if cleaned.
  */
 export function loadRecentRepos(): RecentRepo[] {
   if (typeof window === 'undefined') return [];
@@ -170,7 +258,15 @@ export function loadRecentRepos(): RecentRepo[] {
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed.slice(0, MAX_RECENT_REPOS);
+
+    const deduped = dedupeRecentRepos(parsed);
+
+    // If duplicates were removed, length changed, or formatting differs, write back the cleaned list
+    if (deduped.length !== parsed.length || JSON.stringify(deduped) !== raw) {
+      saveRecentRepos(deduped);
+    }
+
+    return deduped;
   } catch {
     return [];
   }
@@ -182,9 +278,10 @@ export function loadRecentRepos(): RecentRepo[] {
 export function saveRecentRepos(repos: RecentRepo[]): void {
   if (typeof window === 'undefined') return;
   try {
+    const deduped = dedupeRecentRepos(repos);
     window.localStorage.setItem(
       STORAGE_KEY_RECENT_REPOS,
-      JSON.stringify(repos.slice(0, MAX_RECENT_REPOS))
+      JSON.stringify(deduped.slice(0, MAX_RECENT_REPOS))
     );
   } catch {
     // Ignore storage quota or security errors
