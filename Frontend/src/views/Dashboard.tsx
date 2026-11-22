@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   Calendar,
   ChevronDown,
@@ -10,7 +9,6 @@ import {
   ShieldAlert,
   Users,
   Activity,
-  RotateCcw,
   FolderGit2,
   Database,
 } from 'lucide-react';
@@ -28,12 +26,12 @@ import { HonestyNotes } from '../components/dashboard/HonestyNotes';
 import { LoadingSkeleton, EmptyState, ErrorState } from '../components/states';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
+import { ChangeRepoButton } from '../components/ui/ChangeRepoButton';
 import './Dashboard.css';
 
 export const Dashboard: React.FC = () => {
   usePageTitle('Health Dashboard');
-  const navigate = useNavigate();
-  const { repo, activeRepoId, clearRepo } = useRepo();
+  const { repo, activeRepoId } = useRepo();
 
   // Support ?state=loading|empty|error dev switches for testing
   const isDevTesting = typeof window !== 'undefined' && Boolean(new URLSearchParams(window.location.search).get('state'));
@@ -110,19 +108,7 @@ export const Dashboard: React.FC = () => {
           </div>
 
           <div className="dashboard-header-actions">
-            {repo?.status === 'done' && (
-              <Button
-                variant="ghost"
-                size="md"
-                leadingIcon={<RotateCcw size={15} />}
-                onClick={() => {
-                  clearRepo();
-                  navigate('/load');
-                }}
-              >
-                Load a different repository
-              </Button>
-            )}
+            {repo?.status === 'done' && <ChangeRepoButton />}
 
             {/* Export Dropdown */}
             {isLoaded && (

@@ -44,10 +44,35 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape' && onClose) {
+      e.stopPropagation();
+      onClose();
+    }
+  };
+
   // If no commit selected yet, display placeholder
   if (!commit) {
     return (
-      <aside className="commit-details-panel" aria-label="Commit details placeholder">
+      <aside
+        className="commit-details-panel"
+        aria-label="Commit details placeholder"
+        onKeyDown={handleKeyDown}
+        tabIndex={-1}
+      >
+        <div className="commit-details-header">
+          <h3 className="commit-details-title">Commit Details</h3>
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="commit-details-close-btn"
+              aria-label="Close commit details panel"
+            >
+              <X size={18} />
+            </button>
+          )}
+        </div>
         <div className="commit-details-placeholder">
           <div className="commit-details-placeholder-icon" aria-hidden="true">
             <GitCommit size={28} />
@@ -71,6 +96,8 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({
       className="commit-details-panel"
       role="region"
       aria-label={`Details for commit ${commit.short_sha}`}
+      onKeyDown={handleKeyDown}
+      tabIndex={-1}
     >
       {/* Title Bar */}
       <div className="commit-details-header">

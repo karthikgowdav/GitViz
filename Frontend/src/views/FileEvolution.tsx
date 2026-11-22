@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Database, FileSearch, Layers, FileClock, RotateCcw, FolderGit2 } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { Database, FileSearch, Layers, FileClock, FolderGit2 } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useFiles, useFileHistory } from '../api/hooks';
 import { useRepo } from '../context/RepoContext';
 import { USE_MOCK } from '../api/client';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
+import { ChangeRepoButton } from '../components/ui/ChangeRepoButton';
 import { FilePicker } from '../components/files/FilePicker';
 import { FileTimeline } from '../components/files/FileTimeline';
 import { LoadingSkeleton, EmptyState, ErrorState } from '../components/states';
@@ -14,8 +15,7 @@ import './FileEvolution.css';
 
 export const FileEvolution: React.FC = () => {
   usePageTitle('File Evolution');
-  const navigate = useNavigate();
-  const { repo, activeRepoId, clearRepo } = useRepo();
+  const { repo, activeRepoId } = useRepo();
   const [searchParams, setSearchParams] = useSearchParams();
   const urlPath = searchParams.get('path');
   const [mobilePickerOpen, setMobilePickerOpen] = useState(false);
@@ -101,19 +101,7 @@ export const FileEvolution: React.FC = () => {
           </div>
 
           <div className="file-evolution-header-actions">
-            {repo?.status === 'done' && (
-              <Button
-                variant="ghost"
-                size="md"
-                leadingIcon={<RotateCcw size={15} />}
-                onClick={() => {
-                  clearRepo();
-                  navigate('/load');
-                }}
-              >
-                Load a different repository
-              </Button>
-            )}
+            {repo?.status === 'done' && <ChangeRepoButton />}
 
             {/* Mobile file picker drawer toggle button */}
             <div className="mobile-picker-toggle-bar">

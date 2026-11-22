@@ -5,6 +5,7 @@ import { ThemeProvider } from './components/ThemeProvider';
 import { RepoProvider } from './context/RepoContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { AppShell } from './components/AppShell';
+import { ScrollToTop } from './components/ScrollToTop';
 import { LoadingSkeleton } from './components/states';
 
 // Eagerly loaded critical views
@@ -39,6 +40,7 @@ export function App() {
         <ThemeProvider>
           <RepoProvider>
             <BrowserRouter>
+              <ScrollToTop />
               <Suspense
                 fallback={
                   <div style={{ maxWidth: '1200px', margin: 'var(--space-8) auto', padding: '0 var(--space-4)' }}>

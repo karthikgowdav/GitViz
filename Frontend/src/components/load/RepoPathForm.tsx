@@ -144,6 +144,7 @@ export const RepoPathForm: React.FC<RepoPathFormProps> = ({
           </label>
 
           <div className="repo-path-input-wrap">
+            <FolderGit2 size={18} className="repo-path-input-icon" aria-hidden="true" />
             <input
               ref={inputRef}
               id="repo-path-input"

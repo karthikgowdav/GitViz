@@ -78,6 +78,20 @@ export const LoadRepo: React.FC = () => {
     }
   };
 
+  // Handle fresh parameter from ChangeRepoButton
+  useEffect(() => {
+    if (location.state?.fresh) {
+      setActivePath('');
+      setServerError(null);
+      setIsImportStarted(false);
+      try {
+        window.history.replaceState({}, document.title);
+      } catch {
+        // Ignore
+      }
+    }
+  }, [location.state]);
+
   // Auto-start import if triggered from Home quick-start location state
   useEffect(() => {
     const autoLoadPath = location.state?.autoLoadPath;

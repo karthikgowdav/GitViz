@@ -66,6 +66,17 @@
   grid-template-columns: 1fr 380px;
   gap: var(--space-5);
   align-items: start;
+  transition: grid-template-columns var(--transition-normal);
+}
+
+.commit-graph-layout.panel-collapsed {
+  grid-template-columns: 1fr;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .commit-graph-layout {
+    transition: none !important;
+  }
 }
 
 .commit-graph-list-col {
@@ -93,5 +104,17 @@
 
   .commit-graph-details-col {
     margin-top: var(--space-4);
+  }
+}
+
+@media (max-width: 640px) {
+  .commit-graph-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .commit-graph-header-actions {
+    width: 100%;
+    margin-top: var(--space-2);
   }
 }
