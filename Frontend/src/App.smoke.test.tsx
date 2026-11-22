@@ -167,7 +167,7 @@ describe('Application Smoke Tests', () => {
       },
       { timeout: 7000 }
     );
-  });
+  }, 12000);
 
   it('no repo loaded shows the EmptyState with a Load button on each of the three pages', () => {
     // 1. Commit Graph

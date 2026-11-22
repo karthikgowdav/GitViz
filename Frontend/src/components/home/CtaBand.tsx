@@ -59,9 +59,10 @@ export const CtaBand: React.FC = () => {
 
             <div className="cta-band-actions">
               <Button
+                to="/load"
+                state={{ fresh: true }}
                 variant="primary"
                 size="lg"
-                to="/load"
                 className="cta-btn-primary"
                 leadingIcon={<FolderGit2 size={18} />}
                 trailingIcon={<ArrowRight size={18} />}

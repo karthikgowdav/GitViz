@@ -193,7 +193,7 @@ In accordance with **P4 PRD Rule 7** (*"Honesty week: scan every claim — no 'f
 
 ---
 
-## 3. Session Reentry & Upload Entry Point Verification Suite
+## 4. Session Reentry & Upload Entry Point Verification Suite
 
 | # | Test Scenario | Steps | Expected Result | Pass? |
 |---|---------------|-------|-----------------|-------|
@@ -206,3 +206,19 @@ In accordance with **P4 PRD Rule 7** (*"Honesty week: scan every claim — no 'f
 | 7 | **Recent Chips Behavior** | On `/load`, click a chip from the "Recent repositories" list | Path input is populated with the selected path and focused. Ingestion does NOT start automatically; user must click *"Start import"*. | [ ] |
 | 8 | **Change Affordance on Loaded Repo** | After loading a repository, click the header status chip (showing `<name> Change`) | Opens `/load` displaying the form pre-filled with the current path and a note: *"Loading a new repository replaces the current one."* | [ ] |
 | 9 | **Load a Different Repository** | From `/graph`, `/files`, or `/dashboard`, click *"Load a different repository"* in the page header | Clears the active repository from context and navigates to `/load` with an empty path input and no replacement banner. | [ ] |
+
+---
+
+## 5. Load Flow Regression & Monotonicity Verification Suite
+
+| # | Test Scenario | Steps | Expected Result | Pass? |
+|---|---------------|-------|-----------------|-------|
+| 1 | **Monotonic Progress from 0% (BUG 1)** | Load repo `abc` to completion. Return to `/load` and load path `xyz`. Observe progress initialization. | Progress bar strictly starts at 0% with step label "Queued". Never shows 100% or "Import finished" from the previous run; advances monotonically (0% -> 25% -> 50% -> 75% -> 100%). | [ ] |
+| 2 | **Consecutive Multi-Load Longevity (BUG 2)** | Load 6 repositories sequentially without refreshing the browser (`repo-1` through `repo-6`, including different casing and identical paths). After each load finishes, visit `/graph`, `/files`, and `/dashboard`. | Every data page displays the new repository data. The app NEVER falls back to "No repository loaded" after 3, 4, or more loads. Ingest status stays `done`. | [ ] |
+| 3 | **Background Polling & Route Independence (BUG 2)** | Start importing a repository on `/load`. Immediately click "Commit Graph" in the navigation while progress is ~25%. | Ingestion polling continues at the root `RepoContext` level. When finished, context automatically transitions to `done`, header status chip turns green, and Commit Graph displays the newly loaded data without needing to remain on `/load`. | [ ] |
+| 4 | **Current Repository Card (BUG 3)** | With a repository currently loaded, navigate to `/load`. | A "Current Repository" card renders at the top displaying the repo name, path, commit count badge, clear button, and notice: *"Loading a new repository replaces the current one."* | [ ] |
+| 5 | **"Clear and Load Another" Action (BUG 3)** | On the Current Repository card, click "Clear and load another". | Clears the loaded repo from context and storage, clears the form, focuses the empty input field with placeholder, and displays a clean fresh entry form. | [ ] |
+| 6 | **Input Inline Clear (X) Button (BUG 3)** | Type a path in the repository location input field. Click the (X) clear button. | The input field is emptied and receives keyboard focus. Any client error is cleared. If a repository was already loaded, it remains intact. | [ ] |
+| 7 | **Failed Second Import Protection (BUG 3)** | With repository `stable-repo` loaded, attempt to import `/does/not/exist`. | Error alert appears ("Could not load repository: Path not found or not a Git repository"). Crucially, `stable-repo` remains active in context, in the header chip, and in the Current Repository card. Data pages continue to show `stable-repo`. | [ ] |
+| 8 | **Header Load Button Reactivity on `/load` (BUG 4)** | While already on `/load` with text typed in the path input or a finished progress card visible, click the header "Load Repository" button. | The view resets to a clean empty state: path input is cleared and focused, any in-progress or finished card is dismissed, page scrolls to top. The currently loaded repository in context remains untouched. | [ ] |
+| 9 | **Hero Quick-Start Safe Auto-Load (BUG 4)** | On `/`, enter a path in the hero input and click "Load Repository". | Navigates to `/load` and triggers import automatically exactly once. Guarded against React 18 StrictMode double-execution. | [ ] |

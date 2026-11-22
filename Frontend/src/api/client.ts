@@ -441,15 +441,26 @@ interface MockImportState {
   status: 'ingesting' | 'done' | 'error';
   error?: string;
   callCount: number;
+  runId: number;
 }
 
+let currentRunSequence = 0;
 const mockImports = new Map<string, MockImportState>();
+
+/**
+ * Generate a monotonic sequence ID for each repository import run
+ */
+export function getNextImportRunId(): number {
+  currentRunSequence += 1;
+  return currentRunSequence;
+}
 
 /**
  * Reset mock import simulation state (useful for tests and retry flows)
  */
 export function resetMockImportState(repoId: string = 'sample-repo'): void {
   mockImports.delete(repoId);
+  currentRunSequence += 1;
 }
 
 /**
@@ -478,12 +489,15 @@ export async function createRepo({
 
     await simulateDelay(400);
 
-    // Initialize fresh simulation state for sample-repo
+    // Initialize completely fresh simulation state with new monotonic runId
+    const runId = ++currentRunSequence;
+    mockImports.clear();
     mockImports.set('sample-repo', {
       pct: 0,
       commit_count: 0,
       status: 'ingesting',
       callCount: 0,
+      runId,
     });
 
     return {
@@ -542,6 +556,7 @@ export async function getRepoStatus({
         commit_count: 0,
         status: 'ingesting',
         callCount: 0,
+        runId: currentRunSequence,
       };
       mockImports.set(repoId, current);
     }
@@ -553,6 +568,16 @@ export async function getRepoStatus({
         commit_count: current.commit_count,
         status: current.status,
         error: current.error,
+      };
+    }
+
+    // Initial poll returns queued status at 0%
+    if (current.callCount === 0) {
+      current.callCount = 1;
+      return {
+        pct: 0,
+        commit_count: 0,
+        status: 'ingesting',
       };
     }
 

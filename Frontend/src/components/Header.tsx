@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, Link, useLocation } from 'react-router-dom';
+import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom';
 import { GitBranch, Menu, X, FolderGit2 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { Button } from './ui/Button';
 import { useRepo } from '../context/RepoContext';
-import { useRepoStatus } from '../api/hooks';
 import './Header.css';
 
 interface NavItem {
@@ -25,28 +24,31 @@ export const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
-  const { repo } = useRepo();
-  const { data: liveStatus } = useRepoStatus(
-    repo?.repoId,
-    repo?.status === 'ingesting'
-  );
+  const { repo, activeImport } = useRepo();
+
+  const handleLoadRepoClick = () => {
+    setIsMobileMenuOpen(false);
+    navigate('/load', { state: { fresh: true } });
+  };
 
   let chipText = 'No repo loaded';
   let dotClass = 'dot-neutral';
 
-  if (repo) {
-    if (repo.status === 'ingesting') {
-      const pct = liveStatus?.pct ?? 0;
-      chipText = `Importing ${repo.name} ${pct}%`;
-      dotClass = 'dot-ingesting';
-    } else if (repo.status === 'done') {
-      chipText = repo.name;
-      dotClass = 'dot-success';
-    } else if (repo.status === 'error') {
-      chipText = 'Import failed';
-      dotClass = 'dot-error';
-    }
+  const isIngesting = activeImport?.status === 'ingesting';
+  const isImportError = activeImport?.status === 'error';
+
+  if (isIngesting) {
+    const pct = activeImport?.pct ?? 0;
+    chipText = `Importing ${activeImport.name} ${pct}%`;
+    dotClass = 'dot-ingesting';
+  } else if (repo?.status === 'done') {
+    chipText = repo.name;
+    dotClass = 'dot-success';
+  } else if (isImportError || repo?.status === 'error') {
+    chipText = 'Import failed';
+    dotClass = 'dot-error';
   }
 
   // Update shadow when scrolled
@@ -132,7 +134,7 @@ export const Header: React.FC = () => {
           <Button
             variant="primary"
             size="md"
-            to="/load"
+            onClick={handleLoadRepoClick}
             leadingIcon={<FolderGit2 size={15} />}
             className="header-load-btn-desktop"
           >
@@ -162,9 +164,8 @@ export const Header: React.FC = () => {
             <Button
               variant="primary"
               size="md"
-              to="/load"
+              onClick={handleLoadRepoClick}
               leadingIcon={<FolderGit2 size={16} />}
-              onClick={closeMobileMenu}
               className="mobile-load-repo-btn"
             >
               Load Repository

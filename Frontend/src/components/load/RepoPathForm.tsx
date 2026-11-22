@@ -16,6 +16,8 @@ interface RepoPathFormProps {
   serverError: Error | null;
   onClearServerError: () => void;
   initialPath?: string;
+  onResetProgress?: () => void;
+  inputRef?: React.RefObject<HTMLInputElement>;
 }
 
 export const RepoPathForm: React.FC<RepoPathFormProps> = ({
@@ -24,20 +26,24 @@ export const RepoPathForm: React.FC<RepoPathFormProps> = ({
   serverError,
   onClearServerError,
   initialPath = '',
+  onResetProgress,
+  inputRef: externalInputRef,
 }) => {
   const [path, setPath] = useState(initialPath);
   const [clientError, setClientError] = useState<string | null>(null);
   const [recentRepos, setRecentRepos] = useState<RecentRepo[]>([]);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const internalInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = externalInputRef || internalInputRef;
 
   useEffect(() => {
     setRecentRepos(loadRecentRepos());
     inputRef.current?.focus();
-  }, []);
+  }, [inputRef]);
 
   useEffect(() => {
-    if (initialPath) {
-      setPath(initialPath);
+    setPath(initialPath);
+    if (!initialPath) {
+      setClientError(null);
     }
   }, [initialPath]);
 
@@ -52,6 +58,7 @@ export const RepoPathForm: React.FC<RepoPathFormProps> = ({
     setPath('');
     setClientError(null);
     if (serverError) onClearServerError();
+    if (onResetProgress) onResetProgress();
     if (inputRef.current) {
       inputRef.current.focus();
     }
